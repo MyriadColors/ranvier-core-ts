@@ -12,7 +12,7 @@ A command consists of:
 
 ## Defining a Command
 
-Commands are typically defined as a module export within a bundle's `commands/` directory.
+The command definition is typically a module export within a bundle's `commands/` directory. It uses a "thunk" pattern (a function returning a function) to allow the `IGameState` to be injected by the engine during the loading process.
 
 ```typescript
 import { IGameState, Player } from 'ranvier';
@@ -22,7 +22,8 @@ export default {
   command: (state: IGameState) => (args: string, player: Player, commandName: string) => {
     if (!args) {
       // Default look at the room
-      return player.emit('lookRoom');
+      player.emit('lookRoom');
+      return;
     }
 
     // Look at a specific target
@@ -33,12 +34,13 @@ export default {
 
 ### Parameters
 
-The command handler is a "thunk" (a function returning a function) to allow the `IGameState` to be injected during the loading process:
+The injection process works in two stages:
 
-1. **state:** The global `IGameState`.
-2. **args:** Everything typed after the command name.
-3. **player:** The `Player` instance executing the command.
-4. **commandName:** The actual string used to trigger the command (useful if you have multiple aliases).
+1. **Outer Function (Injection):** Receives the global `state` (`IGameState`).
+2. **Inner Function (Execution):** Receives the runtime parameters:
+    - **args:** Everything typed after the command name.
+    - **player:** The `Player` instance executing the command.
+    - **commandName:** The actual string used to trigger the command (useful if you have multiple aliases).
 
 ## Command Aliases & Precedence
 

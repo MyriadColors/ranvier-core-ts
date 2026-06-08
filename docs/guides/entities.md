@@ -52,12 +52,23 @@ function spawnSword(state: IGameState, area: Area): Item {
 import { IGameState, Item } from 'ranvier';
 
 function findItemByUuid(state: IGameState, uuid: string): Item | undefined {
-  // The ItemManager tracks all active item instances in the game world.
-  const foundItem = state.ItemManager.getById(uuid);
-
-  if (foundItem) {
-    console.log(`Found item: ${foundItem.name} (UUID: ${foundItem.uuid})`);
+  // The ItemManager tracks all active item instances in the game world using a Set.
+  for (const item of state.ItemManager.items) {
+    if (item.uuid === uuid) {
+      console.log(`Found item: ${item.name} (UUID: ${item.uuid})`);
+      return item;
+    }
   }
-  return foundItem;
+}
+```
+
+### Example: Finding an NPC by UUID
+
+```typescript
+import { IGameState, Npc } from 'ranvier';
+
+function findNpcByUuid(state: IGameState, uuid: string): Npc | undefined {
+  // The MobManager tracks all active NPC instances using a Map keyed by UUID.
+  return state.MobManager.mobs.get(uuid);
 }
 ```

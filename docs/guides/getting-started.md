@@ -7,104 +7,114 @@ Ranvier Core is a TypeScript engine for building Multi-User Dungeons (MUDs). It 
 - Node.js (v16 or higher)
 - npm or bun
 
-## Installation
+## Quick Start: From Zero to Server
 
-To use the core engine in your project, it is recommended to link it locally during development.
+Follow these steps to initialize a new MUD project and get the server running.
 
-1. **Clone the Core:**
+### 1. Project Setup
 
-    ```bash
-    git clone https://github.com/RanvierMUD/ranvier-core-ts.git
-    cd ranvier-core-ts
-    npm install
-    npm link
-    ```
+Create a new directory for your game and initialize a Node.js project.
 
-2. **Link to your MUD project:**
-
-    ```bash
-    cd /path/to/your-mud-project
-    npm link ranvier
-    ```
-
-## Project Structure
-
-Ranvier projects are organized into **Bundles**. A typical project structure looks like this:
-
-```text
-my-mud/
-├── bundles/                # Game content (areas, items, npcs, logic)
-│   ├── ranvier-areas/
-│   └── ranvier-input-events/
-├── data/                   # Persisted player data and accounts
-├── src/
-│   └── index.ts            # Entry point
-├── package.json
-└── tsconfig.json
+```bash
+mkdir my-mud-game
+cd my-mud-game
+npm init -y
+npm install typescript ts-node --save-dev
+npx tsc --init
 ```
 
-### Bootstrapping the Server
+### 2. Install Ranvier Core and add dependencies
 
-Your entry point assembles the core managers and factories into the `IGameState`. This state is the central registry passed to the `GameServer`.
+During development, you can link to your local clone of the core engine:
+
+```bash
+# In the ranvier-core-ts directory:
+npm link
+
+# In your my-mud-game directory:
+npm link ranvier
+
+# In you my-mud game
+npm install commander --save-dev
+```
+
+### 3. Create Required Directories
+
+Ranvier expects a `bundles` folder (for game content) and a `data` folder (for persistence). Even if they are empty, they must exist for the default configuration to work.
+
+```bash
+mkdir bundles
+mkdir data
+```
+
+### 4. Create your Entry Point
+
+Create a file named `index.ts` in your project root. This single file will act as your server's brain.
+
+**Minimal Boilerplate (`index.ts`):**
 
 ```typescript
 import {
   GameServer,
-  PlayerManager,
-  ItemManager,
-  AreaFactory,
-  Config,
   Logger,
-  DataSourceRegistry,
+  type IGameState,
+  PlayerManager,
+  AreaManager,
+  ItemManager,
+  MobManager,
+  CommandManager,
+  BundleManager,
   EntityLoaderRegistry,
-  YamlDataSource,
-  IGameState,
+  DataSourceRegistry,
 } from 'ranvier';
-
-// Basic configuration for the game server
-const config: Config = {
-  port: 4000,
-  // Add other configurations like `entityDirectory`, `scriptDirectory`, etc.
-  // For now, we'll assume default paths or that data is loaded via data sources.
-};
-
-// Initialize data sources (e.g., for loading game data from YAML files)
-const dataSourceRegistry = new DataSourceRegistry();
-dataSourceRegistry.add('yaml', new YamlDataSource({ dir: __dirname + '/data' }));
-
-// Initialize entity loaders and bind them to data sources
-const entityLoaderRegistry = new EntityLoaderRegistry();
-entityLoaderRegistry.set('areas', dataSourceRegistry.get('yaml'));
-entityLoaderRegistry.set('items', dataSourceRegistry.get('yaml'));
-
-const state = {
-  PlayerManager: new PlayerManager(),
-  ItemManager: new ItemManager(),
-  AreaFactory: new AreaFactory(entityLoaderRegistry.get('areas')),
-  // Add other managers and factories as needed for your game
-} as IGameState; // Cast to IGameState to ensure all required properties are present
-
-// Create and start the game server
-const server = new GameServer(config, state);
+import path from 'node:path';
+import process from 'node:process';
+import { Command } from 'commander';
 
 async function bootstrap() {
+  /**
+   * 1. Initialize the global GameState
+   * The state object is the central registry for everything in your MUD.
+   */
+  const state: IGameState = {
+    PlayerManager: new PlayerManager(),
+    AreaManager: new AreaManager(),
+    ItemManager: new ItemManager(),
+    MobManager: new MobManager(),
+    CommandManager: new CommandManager(),
+    EntityLoaderRegistry: new EntityLoaderRegistry(),
+    DataSourceRegistry: new DataSourceRegistry(),
+    GameServer: new GameServer(),
+    // ... Add other managers/factories as needed
+  } as IGameState;
+
+  /**
+   * 2. Configure project paths
+   */
+  const bundlesPath = path.join(process.cwd(), 'bundles');
+  state.BundleManager = new BundleManager(bundlesPath, state);
+
+  Logger.log("Ranvier MUD is starting up...");
+
   try {
-    await server.start();
-    Logger.log(`Ranvier MUD server started on port ${config.port}`);
-  } catch (error) {
-    Logger.error('Failed to start server:', error);
+    /**
+     * Startup performs the following: 
+     * - Emits the 'startup' event on the GameServer
+     * - Takes a commander.Command object for CLI integration
+     */
+    await state.GameServer.startup(new Command());
+    
+    // Example: Loading all bundles
+    // await state.BundleManager.loadBundles();
+
+    Logger.log("Game Server is online! Use a Telnet client to connect to localhost:4000");
+  } catch (err) {
+    Logger.error(`Critical failure during startup: ${(err as Error).message}`);
     process.exit(1);
   }
 }
 
 bootstrap();
-
-// Example of how you might load an area (this would typically happen during game initialization)
-// state.AreaFactory.loadArea('limbo');
-
-// You would also define your game entities (areas, items, NPCs) in YAML files
-// within a 'data' directory (or whatever you configure your YamlDataSource to use).
-// Example: data/areas/limbo/info.yml, data/areas/limbo/rooms.yml, data/areas/limbo/items.yml
 ```
 
 This `index.ts` file serves as the entry point for your MUD, bringing together the core engine components and your game-specific data.

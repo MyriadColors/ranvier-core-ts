@@ -15,11 +15,11 @@ Behaviors are collections of event listeners that can be attached to any `GameEn
 ### Example: A simple aggressive behavior
 
 ```typescript
-import { IGameState, GameEntity } from 'ranvier';
+import { IGameState, Character } from 'ranvier';
 
 export default {
   listeners: {
-    updateTick: (state: IGameState) => function (this: GameEntity) {
+    updateTick: (state: IGameState) => function (this: Character) {
       if (this.isInCombat()) {
         return;
       }

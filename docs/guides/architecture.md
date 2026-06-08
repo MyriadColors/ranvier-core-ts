@@ -4,14 +4,25 @@ The Ranvier Core follows a centralized management pattern built around the `IGam
 
 ## IGameState: The Registry
 
-The `IGameState` interface is the single source of truth for your game's state. It holds references to all major factories and managers.
+The `IGameState` interface is the single source of truth for your game's state. It holds references to all major factories, managers, and registries.
 
 ```typescript
 export interface IGameState {
-    PlayerManager: PlayerManager;
-    ItemManager: ItemManager;
     AreaFactory: AreaFactory;
-    // ...
+    AreaManager: AreaManager;
+    CommandManager: CommandManager;
+    ItemFactory: ItemFactory;
+    ItemManager: ItemManager;
+    MobFactory: MobFactory;
+    MobManager: MobManager;
+    PlayerManager: PlayerManager;
+    RoomFactory: RoomFactory;
+    RoomManager: RoomManager;
+    // ... and many more
+    GameServer: GameServer;
+    EntityLoaderRegistry: EntityLoaderRegistry;
+    DataSourceRegistry: DataSourceRegistry;
+    BundleManager: BundleManager;
 }
 ```
 
@@ -31,11 +42,12 @@ Bundles are the primary way to organize code and data. A bundle can contain:
 
 ## The Game Loop
 
-The `GameServer` orchestrates the main execution loop. It triggers periodic updates:
+In Ranvier Core, the `GameServer` is a simple `EventEmitter` used to signal system-wide lifecycle events like `startup` and `shutdown`. 
 
-- **updateTick:** A high-frequency tick used for combat and responsive logic.
-- **pulse:** Used for slow-changing game world effects like weather or regeneration.
-- **save:** Triggered to persist the state of entities and players to the data source.
+The actual game heartbeats (ticks) and periodic updates are typically managed by the entry point of your application, which orchestrates calls to the various Managers:
+
+- **updateTick:** Usually triggered by the `AreaManager` and `PlayerManager` to handle combat and responsive logic.
+- **save:** Triggered periodically on the `PlayerManager` to persist state.
 
 ## Data Persistence
 

@@ -50,12 +50,10 @@ export class WebSocketStream extends TransportStream {
   }
 
   // 2. Implement write() to send data to the player
-  write(message: string): boolean {
+  write(message: string): void {
     if (this.socket.readyState === this.socket.OPEN) {
       this.socket.send(message);
-      return true;
     }
-    return false;
   }
 }
 ```
