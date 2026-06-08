@@ -1,5 +1,7 @@
 import { ISerializedEffectableEntity } from "./EffectableEntity";
-import type { Broadcast } from "./Broadcast";
+import { Broadcast } from "./Broadcast";
+import { Damage } from "./Damage";
+import { Heal } from "./Heal";
 import { IItemDef, Item } from "./Item";
 import { IInventoryDef, Inventory, InventoryFullError } from "./Inventory";
 import { Room } from "./Room";
@@ -8,7 +10,7 @@ import { Party } from "./Party";
 import { EquipSlotTakenError, EquipAlreadyEquippedError } from "./EquipErrors";
 import { EntityReference } from "./EntityReference";
 import { Equipment } from "./Equipment";
-import { GameEntity } from "./GameEntity";
+import { GameEntity, PlayerOrNpc } from "./GameEntity";
 
 export interface ICharacterConfig extends ISerializedEffectableEntity {
 	/** @property {string}     name       Name shown on look/who/login */
@@ -411,6 +413,63 @@ export class Character extends GameEntity {
 	 */
 	hasFollower(target: Character) {
 		return this.followers.has(target);
+	}
+
+	/**
+	 * @see {@link Broadcast.sayAt}
+	 */
+	say(message: string, wrapWidth?: number) {
+		Broadcast.sayAt(this, message, wrapWidth);
+	}
+
+	/**
+	 * @param {number} amount
+	 * @param {string} [attribute="health"]
+	 * @param {Character} [attacker]
+	 * @param {*} [source]
+	 * @param {Record<string, unknown>} [metadata]
+	 * @see {@link Damage}
+	 */
+	damage(
+		amount: number,
+		attribute: string = "health",
+		attacker?: Character,
+		source?: any,
+		metadata?: Record<string, unknown>,
+	) {
+		const damage = new Damage(
+			attribute,
+			amount,
+			attacker as PlayerOrNpc,
+			source,
+			metadata,
+		);
+		damage.commit(this as unknown as PlayerOrNpc);
+	}
+
+	/**
+	 * @param {number} amount
+	 * @param {string} [attribute="health"]
+	 * @param {Character} [attacker]
+	 * @param {*} [source]
+	 * @param {Record<string, unknown>} [metadata]
+	 * @see {@link Heal}
+	 */
+	heal(
+		amount: number,
+		attribute: string = "health",
+		attacker?: Character,
+		source?: any,
+		metadata?: Record<string, unknown>,
+	) {
+		const heal = new Heal(
+			attribute,
+			amount,
+			attacker as PlayerOrNpc,
+			source,
+			metadata,
+		);
+		heal.commit(this as unknown as PlayerOrNpc);
 	}
 
 	/**

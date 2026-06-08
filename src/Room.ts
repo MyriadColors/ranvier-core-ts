@@ -1,4 +1,5 @@
 import { Area } from "./Area";
+import { Broadcast, Broadcastable } from "./Broadcast";
 import { Config } from "./Config";
 import { ISerializedEffect } from "./Effect";
 import { SerializedAttributes } from "./EffectableEntity";
@@ -520,6 +521,21 @@ export class Room extends GameEntity {
 				}
 			});
 		}
+	}
+
+	/**
+	 * @param {string} message
+	 * @param {Broadcastable|Broadcastable[]} excludes
+	 * @param {number} wrapWidth
+	 * @see {@link Broadcast.sayAtExcept}
+	 */
+	broadcast(
+		message: string,
+		excludes: Broadcastable | Broadcastable[] = [],
+		wrapWidth?: number,
+	) {
+		const excludeArray = Array.isArray(excludes) ? excludes : [excludes];
+		Broadcast.sayAtExcept(this, message, excludeArray, wrapWidth);
 	}
 
 	/**

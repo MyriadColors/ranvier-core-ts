@@ -11,7 +11,7 @@ import { AttributeFactory } from "./AttributeFactory";
 import { Attribute, AttributeFormula } from "./Attribute";
 import { Attributes } from "./Attributes";
 import { BehaviorManager } from "./BehaviorManager";
-import { Broadcast, Broadcastable } from "./Broadcast";
+import { Broadcast, Broadcastable, BroadcastBuilder } from "./Broadcast";
 import { BundleManager } from "./BundleManager";
 import {
 	IChannelConfig as ChannelConfig,
@@ -73,6 +73,7 @@ import { QuestGoalManager } from "./QuestGoalManager";
 import { QuestReward } from "./QuestReward";
 import { QuestRewardManager } from "./QuestRewardManager";
 import { QuestTracker } from "./QuestTracker";
+import { Ranvier } from "./Ranvier";
 import { RoleAudience } from "./RoleAudience";
 import { Room } from "./Room";
 import { RoomAudience } from "./RoomAudience";
@@ -109,6 +110,7 @@ export {
 	BehaviorManager,
 	Broadcast,
 	Broadcastable,
+	BroadcastBuilder,
 	BundleManager,
 	ChannelConfig,
 	Channel,
@@ -171,6 +173,7 @@ export {
 	QuestReward,
 	QuestRewardManager,
 	QuestTracker,
+	Ranvier,
 	RoleAudience,
 	Room,
 	RoomAudience,

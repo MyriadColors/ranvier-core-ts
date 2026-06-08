@@ -8,5 +8,5 @@ export type Constructor<T = EventEmitter> = new (...args: any[]) => T;
  * @return {boolean}
  */
 export function isIterable(obj: Iterable<unknown>) {
-	return obj && typeof obj[Symbol.iterator] === "function";
+	return !!(obj && typeof obj[Symbol.iterator] === "function");
 }

@@ -366,4 +366,106 @@ export class Broadcast {
 	static isBroadcastable(source: Broadcastable) {
 		return source && typeof source.getBroadcastTargets === "function";
 	}
+
+	/**
+	 * Start a fluent broadcast chain.
+	 * @param {Broadcastable} target
+	 * @returns {BroadcastBuilder}
+	 */
+	static to(target: Broadcastable): BroadcastBuilder {
+		return new BroadcastBuilder(target);
+	}
+}
+
+/**
+ * Fluent builder for creating broadcast messages.
+ */
+export class BroadcastBuilder {
+	private excludes: Broadcastable[] = [];
+	private wrapWidth: number | false = false;
+	private formatter: FormatterFn | null = null;
+
+	constructor(private target: Broadcastable) {}
+
+	/**
+	 * Exclude one or more targets from the broadcast.
+	 * @param {Broadcastable|Broadcastable[]} excludes
+	 * @returns {this}
+	 */
+	except(excludes: Broadcastable | Broadcastable[]): this {
+		if (Array.isArray(excludes)) {
+			this.excludes = this.excludes.concat(excludes);
+		} else {
+			this.excludes.push(excludes);
+		}
+		return this;
+	}
+
+	/**
+	 * Set the wrap width for the message.
+	 * @param {number|false} width
+	 * @returns {this}
+	 */
+	wrap(width: number | false): this {
+		this.wrapWidth = width;
+		return this;
+	}
+
+	/**
+	 * Set a custom formatter for the message.
+	 * @param {FormatterFn} formatter
+	 * @returns {this}
+	 */
+	format(formatter: FormatterFn): this {
+		this.formatter = formatter;
+		return this;
+	}
+
+	/**
+	 * Send the message with a newline.
+	 * @param {string} message
+	 * @returns {void}
+	 */
+	say(message: string): void {
+		if (this.excludes.length > 0) {
+			Broadcast.sayAtExcept(
+				this.target,
+				message,
+				this.excludes,
+				this.wrapWidth || undefined,
+				this.formatter || undefined,
+			);
+		} else {
+			Broadcast.sayAt(
+				this.target,
+				message,
+				this.wrapWidth || undefined,
+				this.formatter || undefined,
+			);
+		}
+	}
+
+	/**
+	 * Send the message without a newline.
+	 * @param {string} message
+	 * @returns {void}
+	 */
+	at(message: string): void {
+		if (this.excludes.length > 0) {
+			Broadcast.atExcept(
+				this.target,
+				message,
+				this.excludes,
+				this.wrapWidth || undefined,
+				this.formatter || undefined,
+			);
+		} else {
+			Broadcast.at(
+				this.target,
+				message,
+				this.wrapWidth || undefined,
+				this.formatter || undefined,
+			);
+		}
+	}
 }

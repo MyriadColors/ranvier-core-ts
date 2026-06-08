@@ -8,6 +8,16 @@ describe("Basic Attribute", () => {
 		attribute = new Attribute("test", base);
 	});
 
+	describe("Constructor", () => {
+		it("should throw if base is NaN", () => {
+			expect(() => new Attribute("test", NaN)).toThrow(TypeError);
+		});
+
+		it("should throw if delta is NaN", () => {
+			expect(() => new Attribute("test", 10, NaN)).toThrow(TypeError);
+		});
+	});
+
 	describe("#setBase", () => {
 		it("should update base value", () => {
 			expect(attribute.base).toBe(base);
@@ -18,6 +28,18 @@ describe("Basic Attribute", () => {
 		it("should not allow negative base", () => {
 			attribute.setBase(-100);
 			expect(attribute.base).toBe(0);
+		});
+	});
+
+	describe("#setDelta", () => {
+		it("should set delta directly", () => {
+			attribute.setDelta(-5);
+			expect(attribute.delta).toBe(-5);
+		});
+
+		it("should clamp delta to 0", () => {
+			attribute.setDelta(5);
+			expect(attribute.delta).toBe(0);
 		});
 	});
 
@@ -42,4 +64,38 @@ describe("Basic Attribute", () => {
 			expect(attribute.delta).toBe(0);
 		});
 	});
+
+	describe("#serialize", () => {
+		it("should return base and delta", () => {
+			attribute.lower(5);
+			const serialized = attribute.serialize();
+			expect(serialized).toEqual({ base: 10, delta: -5 });
+		});
+	});
 });
+
+import { AttributeFormula } from "../../src/Attribute";
+import { EffectableEntity } from "../../src/EffectableEntity";
+
+describe("AttributeFormula", () => {
+	it("should throw if requires is not an array", () => {
+		// @ts-expect-error
+		expect(() => new AttributeFormula(null, () => 1)).toThrow(TypeError);
+	});
+
+	it("should throw if fn is not a function", () => {
+		// @ts-expect-error
+		expect(() => new AttributeFormula([], null)).toThrow(TypeError);
+	});
+
+	it("should evaluate correctly", () => {
+		const formula = new AttributeFormula([], (entity, ...args) => {
+			return args[0] * 2;
+		});
+
+		const attribute = new Attribute("test", 10);
+		const entity = new EffectableEntity({});
+		expect(formula.evaluate(attribute, entity, 5)).toBe(10);
+	});
+});
+
