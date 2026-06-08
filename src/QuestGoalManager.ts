@@ -1,4 +1,4 @@
-import { QuestGoal } from './QuestGoal';
+import { QuestGoal } from "./QuestGoal";
 
 /**
  * Simple map of quest goal name => class definition

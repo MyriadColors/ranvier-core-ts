@@ -1,4 +1,4 @@
-import { Helpfile } from './Helpfile';
+import { Helpfile } from "./Helpfile";
 
 /**
  * Contain/look up helpfiles
@@ -67,9 +67,8 @@ export class HelpManager {
 
 	/**
 	 * Returns first help matching keywords
-	 * @param {string} search
-	 * @param {boolean} exact
-	 * @return {?string}
+	 * @param {string} help
+	 * @return {Helpfile|null}
 	 */
 	getFirst(help: string) {
 		const results = this.find(help);
@@ -81,7 +80,7 @@ export class HelpManager {
 			return null;
 		}
 
-		const [_, hfile] = [...results][0];
+		const [, hfile] = [...results][0];
 
 		return hfile;
 	}

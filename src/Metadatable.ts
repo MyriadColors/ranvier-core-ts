@@ -1,8 +1,6 @@
-import { Constructor } from './Util';
+import { Constructor } from "./Util";
 
 /**
- * @ignore
- * @exports MetadatableFn
  * @param {*} parentClass
  * @return {module:MetadatableFn~Metadatable}
  */
@@ -23,60 +21,52 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 		 * @param {*}      value Value must be JSON.stringify-able
 		 * @throws Error
 		 * @throws RangeError
-		 * @fires Metadatable#metadataUpdate
+		 * **Fires**: Metadatable#metadataUpdate
 		 */
 		setMeta(key: string, value: any) {
 			if (!this.metadata) {
-				throw new Error('Class does not have metadata property');
+				throw new Error("Class does not have metadata property");
 			}
 
-			let parts = key.split('.');
-			const property = parts.pop();
-			let base = this.metadata;
-
-			if (!property) {
-				throw new RangeError(`Metadata path invalid: ${property}`);
-			}
-
-			while (parts.length) {
-				let part = parts.shift();
-				if (!part || !(part in base)) {
-					throw new RangeError(`Metadata path invalid: ${key}`);
+			const parts = key.split(".");
+			const last = parts.pop() as string;
+			let cur = this.metadata;
+			for (const part of parts) {
+				if (!(part in cur)) {
+					cur[part] = {};
 				}
-				base = base[part];
+				cur = cur[part];
 			}
 
-			const oldValue = base[property];
-
-			if (value === oldValue) {
-				return;
-			}
-
-			base[property] = value;
-
+			cur[last] = value;
 			/**
 			 * @event Metadatable#metadataUpdate
 			 * @param {string} key
-			 * @param {*} newValue
-			 * @param {*} oldValue
+			 * @param {*} value
 			 */
-			this.emit('metadataUpdated', key, value, oldValue);
+			this.emit("metadataUpdate", key, value);
 		}
 
 		/**
-		 * Get metadata by dot notation
-		 * Warning: This method is _very_ permissive and will not error on a non-existent key. Rather, it will return false.
-		 * @param {string} key Key to fetch. Supports dot notation e.g., `"foo.bar"`
+		 * Get metadata by key
+		 * @param {string} key Supports dot notation
 		 * @return {*}
-		 * @throws Error
 		 */
 		getMeta(key: string) {
 			if (!this.metadata) {
-				throw new Error('Class does not have metadata property');
+				return undefined;
 			}
 
-			const base = this.metadata;
-			return key.split('.').reduce((obj, index) => obj && obj[index], base);
+			const parts = key.split(".");
+			let cur: any = this.metadata;
+			for (const part of parts) {
+				if (!(part in cur)) {
+					return undefined;
+				}
+				cur = cur[part];
+			}
+
+			return cur;
 		}
 	};
 }

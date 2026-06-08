@@ -1,5 +1,5 @@
-import { Account } from './Account';
-import { EntityLoader } from './EntityLoader';
+import { Account } from "./Account";
+import { EntityLoader } from "./EntityLoader";
 
 /**
  * Creates/loads {@linkplain Account|Accounts}
@@ -19,7 +19,7 @@ export class AccountManager {
 
 	/**
 	 * Set the entity loader from which accounts are loaded
-	 * @param {EntityLoader}
+	 * @param {EntityLoader} loader
 	 */
 	setLoader(loader: EntityLoader) {
 		this.loader = loader;
@@ -54,14 +54,14 @@ export class AccountManager {
 		}
 
 		if (!this.loader) {
-			throw new Error('No entity loader configured for accounts');
+			throw new Error("No entity loader configured for accounts");
 		}
 
 		const data = await this.loader.fetch(username);
 
-		let account = new Account(data);
+		const account = new Account(data);
 		this.addAccount(account);
 
 		return account;
-  }
+	}
 }

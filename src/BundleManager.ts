@@ -1,36 +1,42 @@
-import fs from 'fs';
-import path from 'path';
-import { IAreaDef, IAreaManifest } from './Area';
-import { AttributeFormula, IAttributeDef } from './Attribute';
-import { BehaviorManager } from './BehaviorManager';
-import { Channel, IChannelLoader } from './Channel';
-import { Command, ICommandDef } from './Command';
-import { Config } from './Config';
-import { Data } from './Data';
-import { IEffectDef } from './Effect';
-import { EntityDefinitionBase, EntityFactory } from './EntityFactory';
-import { EntityLoaderKeys, EntityLoaderRegistry } from './EntityLoaderRegistry';
-import { EntityReference } from './EntityReference';
-import { EventListeners } from './EventManager';
-import { IGameState } from './GameState';
-import { Helpfile } from './Helpfile';
-import { Logger } from './Logger';
-import { IQuestDef } from './Quest';
-import { QuestGoal } from './QuestGoal';
-import { QuestReward } from './QuestReward';
-import { ISkillOptions, Skill } from './Skill';
-import { SkillType } from './SkillType';
-import { EffectableEntity } from './EffectableEntity';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+import { IAreaDef, IAreaManifest } from "./Area";
+import { AttributeFormula, IAttributeDef } from "./Attribute";
+import { BehaviorManager } from "./BehaviorManager";
+import { Channel, IChannelLoader } from "./Channel";
+import { Command, ICommandDef } from "./Command";
+import { Config } from "./Config";
+import { Data } from "./Data";
+import { IEffectDef } from "./Effect";
+import { EntityDefinitionBase, EntityFactory } from "./EntityFactory";
+import { EntityLoaderKeys, EntityLoaderRegistry } from "./EntityLoaderRegistry";
+import { EntityReference } from "./EntityReference";
+import { EventListeners } from "./EventManager";
+import { IGameState } from "./GameState";
+import { Helpfile } from "./Helpfile";
+import { Logger } from "./Logger";
+import { IQuestDef } from "./Quest";
+import { QuestGoal } from "./QuestGoal";
+import { QuestReward } from "./QuestReward";
+import { ISkillOptions, Skill } from "./Skill";
+import { SkillType } from "./SkillType";
+import { EffectableEntity } from "./EffectableEntity";
 
 export interface IListenersLoader {
 	listeners: EventListeners;
 }
 
 export interface IEventLoader {
-	event?: Function | ((state: IGameState) => Function);
+	event?:
+		| ((...args: any[]) => any)
+		| ((state: IGameState) => (...args: any[]) => any);
 }
 
-const srcPath = __dirname + '/';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const srcPath = __dirname + "/";
 /**
  * Handles loading/parsing/initializing all bundles. AKA where the magic happens
  */
@@ -45,7 +51,7 @@ export class BundleManager {
 	 */
 	constructor(path: string, state: IGameState) {
 		if (!path || !fs.existsSync(path)) {
-			throw new Error('Invalid bundle path');
+			throw new Error("Invalid bundle path");
 		}
 
 		this.state = state;
@@ -59,15 +65,15 @@ export class BundleManager {
 	 * @param {boolean} distribute
 	 */
 	async loadBundles(distribute = true) {
-		Logger.verbose('LOAD: BUNDLES');
+		Logger.verbose("LOAD: BUNDLES");
 
-		const bundles = Config.get('bundles');
+		const bundles = Config.get("bundles");
 		for (const bundle of bundles) {
 			const bundlePath = this.bundlesPath + bundle;
 			if (
 				(fs.existsSync(bundlePath) && fs.statSync(bundlePath).isFile()) ||
-				bundle === '.' ||
-				bundle === '..'
+				bundle === "." ||
+				bundle === ".."
 			) {
 				continue;
 			}
@@ -82,7 +88,7 @@ export class BundleManager {
 			process.exit(0);
 		}
 
-		Logger.verbose('ENDLOAD: BUNDLES');
+		Logger.verbose("ENDLOAD: BUNDLES");
 
 		if (!distribute) {
 			return;
@@ -109,25 +115,25 @@ export class BundleManager {
 		// prettier-ignore
 		const features = [
 			// quest goals/rewards have to be loaded before areas that have quests which use those goals
-			{ path: 'quest-goals/',      fn: this.loadQuestGoals },
-			{ path: 'quest-rewards/',    fn: this.loadQuestRewards },
-			{ path: 'attributes.js',     fn: this.loadAttributes },
+			{ path: "quest-goals/", fn: this.loadQuestGoals },
+			{ path: "quest-rewards/", fn: this.loadQuestRewards },
+			{ path: "attributes.js", fn: this.loadAttributes },
 			// any entity in an area, including the area itself, can have behaviors so load them first
-			{ path: 'behaviors/',        fn: this.loadBehaviors },
-			{ path: 'channels.js',       fn: this.loadChannels },
-			{ path: 'commands/',         fn: this.loadCommands },
-			{ path: 'effects/',          fn: this.loadEffects },
-			{ path: 'input-events/',     fn: this.loadInputEvents },
-			{ path: 'server-events/',    fn: this.loadServerEvents },
-			{ path: 'player-events.js',  fn: this.loadPlayerEvents },
-			{ path: 'skills/',           fn: this.loadSkills },
+			{ path: "behaviors/", fn: this.loadBehaviors },
+			{ path: "channels.js", fn: this.loadChannels },
+			{ path: "commands/", fn: this.loadCommands },
+			{ path: "effects/", fn: this.loadEffects },
+			{ path: "input-events/", fn: this.loadInputEvents },
+			{ path: "server-events/", fn: this.loadServerEvents },
+			{ path: "player-events.js", fn: this.loadPlayerEvents },
+			{ path: "skills/", fn: this.loadSkills },
 		];
 
 		Logger.verbose(`LOAD: BUNDLE [\x1B[1;33m${bundle}\x1B[0m] START`);
 		for (const feature of features) {
-			const path = bundlePath + '/' + feature.path;
+			const path = bundlePath + "/" + feature.path;
 			if (fs.existsSync(path)) {
-				feature.fn.call(this, bundle, path);
+				await feature.fn.call(this, bundle, path);
 			}
 		}
 
@@ -149,7 +155,7 @@ export class BundleManager {
 
 			const goalName = path.basename(goalFile, path.extname(goalFile));
 			const loader = require(goalPath);
-			let goalImport = QuestGoal.isPrototypeOf(loader)
+			const goalImport = Object.prototype.isPrototypeOf.call(QuestGoal, loader)
 				? loader
 				: loader(srcPath);
 			Logger.verbose(`\t\t${goalName}`);
@@ -172,7 +178,10 @@ export class BundleManager {
 
 			const rewardName = path.basename(rewardFile, path.extname(rewardFile));
 			const loader = require(rewardPath);
-			let rewardImport = QuestReward.isPrototypeOf(loader)
+			const rewardImport = Object.prototype.isPrototypeOf.call(
+				QuestReward,
+				loader,
+			)
 				? loader
 				: loader(srcPath);
 			Logger.verbose(`\t\t${rewardName}`);
@@ -210,14 +219,14 @@ export class BundleManager {
 	 */
 	addAttributes(attributes: IAttributeDef[], errorPrefix: string) {
 		for (const attribute of attributes) {
-			if (typeof attribute !== 'object') {
+			if (typeof attribute !== "object") {
 				Logger.error(`${attribute} not an object`);
 				continue;
 			}
 
-			if (!('name' in attribute) || !('base' in attribute)) {
+			if (!("name" in attribute) || !("base" in attribute)) {
 				Logger.error(
-					`${errorPrefix} does not include required properties name and base`
+					`${errorPrefix} does not include required properties name and base`,
 				);
 				continue;
 			}
@@ -226,7 +235,7 @@ export class BundleManager {
 			if (attribute.formula) {
 				formula = new AttributeFormula(
 					attribute.formula.requires || [],
-					attribute.formula.fn
+					attribute.formula.fn,
 				);
 			}
 
@@ -236,7 +245,7 @@ export class BundleManager {
 				attribute.name,
 				attribute.base,
 				formula,
-				attribute.metadata
+				attribute.metadata,
 			);
 		}
 	}
@@ -252,7 +261,7 @@ export class BundleManager {
 		const loader = require(eventsFile);
 		const playerListeners = this._getLoader<IListenersLoader>(
 			loader,
-			srcPath
+			srcPath,
 		).listeners;
 
 		for (const [eventName, listener] of Object.entries(playerListeners)) {
@@ -305,18 +314,18 @@ export class BundleManager {
 			id: areaName,
 		};
 
-		const scriptPath = this._getAreaScriptPath(bundle, 'area');
+		const scriptPath = this._getAreaScriptPath(bundle, "area");
 
 		if (manifest.script) {
 			const areaScriptPath = `${scriptPath}/${manifest.script}.js`;
 			if (!fs.existsSync(areaScriptPath)) {
 				Logger.warn(
-					`\t\t\t[${areaName}] has non-existent script "${manifest.script}"`
+					`\t\t\t[${areaName}] has non-existent script "${manifest.script}"`,
 				);
 			}
 
 			Logger.verbose(
-				`\t\t\tLoading Area Script for [${areaName}]: ${manifest.script}`
+				`\t\t\tLoading Area Script for [${areaName}]: ${manifest.script}`,
 			);
 			this.loadEntityScript(this.state.AreaFactory, areaName, areaScriptPath);
 		}
@@ -328,23 +337,23 @@ export class BundleManager {
 			bundle,
 			areaName,
 			EntityLoaderKeys.ITEMS,
-			this.state.ItemFactory
+			this.state.ItemFactory,
 		);
 		Logger.verbose(`\t\tLOAD: NPCs...`);
 		definition.npcs = await this.loadEntities(
 			bundle,
 			areaName,
 			EntityLoaderKeys.NPCS,
-			this.state.MobFactory
+			this.state.MobFactory,
 		);
 		Logger.verbose(`\t\tLOAD: Rooms...`);
 		definition.rooms = await this.loadEntities(
 			bundle,
 			areaName,
 			EntityLoaderKeys.ROOMS,
-			this.state.RoomFactory
+			this.state.RoomFactory,
 		);
-		Logger.verbose('\t\tDone.');
+		Logger.verbose("\t\tDone.");
 
 		for (const npcRef of definition.npcs) {
 			const npc = this.state.MobFactory.getDefinition(npcRef);
@@ -358,7 +367,7 @@ export class BundleManager {
 				const quest = this.state.QuestFactory.get(qid);
 				if (!quest) {
 					Logger.error(
-						`\t\t\tError: NPC is questor for non-existent quest [${qid}]`
+						`\t\t\tError: NPC is questor for non-existent quest [${qid}]`,
 					);
 					continue;
 				}
@@ -380,12 +389,12 @@ export class BundleManager {
 	 */
 	async loadEntities<
 		TEntity extends EffectableEntity,
-		TDef extends EntityDefinitionBase
+		TDef extends EntityDefinitionBase,
 	>(
 		bundle: string,
 		areaName: string,
 		type: EntityLoaderKeys,
-		factory: EntityFactory<TEntity, TDef>
+		factory: EntityFactory<TEntity, TDef>,
 	): Promise<string[]> {
 		const loader = this.loaderRegistry.get(type);
 		loader.setBundle(bundle);
@@ -405,18 +414,18 @@ export class BundleManager {
 			entity.area = areaName;
 			factory.setDefinition(entityRef, entity);
 			if (entity.script !== undefined) {
-				let scriptPath = '';
+				let scriptPath = "";
 				switch (type) {
 					case EntityLoaderKeys.NPCS: {
-						scriptPath = this._getAreaScriptPath(bundle, 'npc');
+						scriptPath = this._getAreaScriptPath(bundle, "npc");
 						break;
 					}
 					case EntityLoaderKeys.ITEMS: {
-						scriptPath = this._getAreaScriptPath(bundle, 'item');
+						scriptPath = this._getAreaScriptPath(bundle, "item");
 						break;
 					}
 					case EntityLoaderKeys.ROOMS: {
-						scriptPath = this._getAreaScriptPath(bundle, 'room');
+						scriptPath = this._getAreaScriptPath(bundle, "room");
 						break;
 					}
 				}
@@ -424,11 +433,11 @@ export class BundleManager {
 				const entityScript = `${scriptPath}/${entity.script}.js`;
 				if (!fs.existsSync(entityScript)) {
 					Logger.warn(
-						`\t\t\t[${entityRef}] has non-existent script "${entity.script}"`
+						`\t\t\t[${entityRef}] has non-existent script "${entity.script}"`,
 					);
 				} else {
 					Logger.verbose(
-						`\t\t\tLoading Script [${entityRef}] ${entity.script}`
+						`\t\t\tLoading Script [${entityRef}] ${entity.script}`,
 					);
 					this.loadEntityScript(factory, entityRef, entityScript);
 				}
@@ -445,16 +454,16 @@ export class BundleManager {
 	 */
 	loadEntityScript<
 		TEntity extends EffectableEntity,
-		TDef extends EntityDefinitionBase
+		TDef extends EntityDefinitionBase,
 	>(
 		factory: EntityFactory<TEntity, TDef>,
 		entityRef: EntityReference,
-		scriptPath: string
+		scriptPath: string,
 	) {
 		const loader = require(scriptPath);
 		const scriptListeners = this._getLoader<IListenersLoader>(
 			loader,
-			srcPath
+			srcPath,
 		).listeners;
 
 		for (const [eventName, listener] of Object.entries(scriptListeners)) {
@@ -475,7 +484,9 @@ export class BundleManager {
 		let quests = [];
 		try {
 			quests = await loader.fetchAll();
-		} catch (err) {}
+		} catch {
+			// ignore fetch error
+		}
 
 		return quests.map((quest: IQuestDef) => {
 			Logger.verbose(`\t\t\tLoading Quest [${areaName}:${quest.id}]`);
@@ -517,7 +528,7 @@ export class BundleManager {
 		const cmdImport: ICommandDef = this._getLoader(
 			loader,
 			srcPath,
-			this.bundlesPath
+			this.bundlesPath,
 		);
 		cmdImport.command = cmdImport.command(this.state);
 
@@ -595,16 +606,16 @@ export class BundleManager {
 			const loader = require(eventPath);
 			const eventImport = this._getLoader<IEventLoader>(loader, srcPath);
 
-			if (typeof eventImport.event !== 'function') {
+			if (typeof eventImport.event !== "function") {
 				throw new Error(
 					`Bundle ${bundle} has an invalid input event '${eventName}'. Expected a function, got: ` +
-						eventImport.event
+						eventImport.event,
 				);
 			}
 
 			this.state.InputEventManager.add(
 				eventName,
-				eventImport.event(this.state)
+				eventImport.event(this.state),
 			);
 		}
 
@@ -620,9 +631,9 @@ export class BundleManager {
 		const loadEntityBehaviors = (
 			type: string,
 			manager: BehaviorManager,
-			state: IGameState
+			state: IGameState,
 		) => {
-			let typeDir = behaviorsDir + type + '/';
+			const typeDir = behaviorsDir + type + "/";
 
 			if (!fs.existsSync(typeDir)) {
 				return;
@@ -639,13 +650,13 @@ export class BundleManager {
 
 				const behaviorName = path.basename(
 					behaviorFile,
-					path.extname(behaviorFile)
+					path.extname(behaviorFile),
 				);
 				Logger.verbose(`\t\t\tLOAD: BEHAVIORS [${type}] ${behaviorName}...`);
 				const loader = require(behaviorPath);
 				const behaviorListeners = this._getLoader<IListenersLoader>(
 					loader,
-					srcPath
+					srcPath,
 				).listeners;
 
 				for (const [eventName, listener] of Object.entries(behaviorListeners)) {
@@ -654,10 +665,10 @@ export class BundleManager {
 			}
 		};
 
-		loadEntityBehaviors('area', this.state.AreaBehaviorManager, this.state);
-		loadEntityBehaviors('npc', this.state.MobBehaviorManager, this.state);
-		loadEntityBehaviors('item', this.state.ItemBehaviorManager, this.state);
-		loadEntityBehaviors('room', this.state.RoomBehaviorManager, this.state);
+		loadEntityBehaviors("area", this.state.AreaBehaviorManager, this.state);
+		loadEntityBehaviors("npc", this.state.MobBehaviorManager, this.state);
+		loadEntityBehaviors("item", this.state.ItemBehaviorManager, this.state);
+		loadEntityBehaviors("room", this.state.RoomBehaviorManager, this.state);
 
 		Logger.verbose(`\tENDLOAD: Behaviors...`);
 	}
@@ -740,7 +751,7 @@ export class BundleManager {
 			const loader = require(eventsPath);
 			const eventsListeners = this._getLoader<IListenersLoader>(
 				loader,
-				srcPath
+				srcPath,
 			).listeners;
 			if (!eventsListeners) {
 				continue;
@@ -761,13 +772,13 @@ export class BundleManager {
 	 * @param {function (string)|object|array} loader
 	 * @return {loader}
 	 */
-	_getLoader<T>(loader: Function, ...args: any[]): T {
-		if (typeof loader === 'function') {
+	_getLoader<T>(loader: ((...args: any[]) => T) | T, ...args: any[]): T {
+		if (typeof loader === "function") {
 			// backwards compatible for old module loader(srcPath)
-			return loader(...args);
+			return (loader as (...args: any[]) => T)(...args);
 		}
 
-		return loader;
+		return loader as T;
 	}
 
 	/**

@@ -1,6 +1,6 @@
-import { Area, IAreaDef } from './Area';
-import { EntityFactory } from './EntityFactory';
-import { EntityReference } from './EntityReference';
+import { Area, IAreaDef } from "./Area";
+import { EntityFactory } from "./EntityFactory";
+import { EntityReference } from "./EntityReference";
 
 /**
  * Stores definitions of items to allow for easy creation/cloning of objects
@@ -11,8 +11,6 @@ export class AreaFactory extends EntityFactory<Area, IAreaDef> {
 	 * any of its contained entities (items, npcs, rooms) hydrated. You will
 	 * need to call `area.hydrate(state)`
 	 *
-	 * @param {GameState} state
-	 * @param {string} bundle Name of this bundle this area is defined in
 	 * @param {string} entityRef Area name
 	 * @return {Area}
 	 */
@@ -20,7 +18,7 @@ export class AreaFactory extends EntityFactory<Area, IAreaDef> {
 		const definition = this.getDefinition(entityRef);
 		if (!definition) {
 			throw new Error(
-				'[AreaFactory] No Entity definition found for ' + entityRef
+				"[AreaFactory] No Entity definition found for " + entityRef,
 			);
 		}
 

@@ -1,10 +1,10 @@
-import { EventEmitter } from 'events';
-import { Damage } from './Damage';
-import { EffectableEntity } from './EffectableEntity';
-import { IGameState } from './GameState';
-import { Skill } from './Skill';
-import { EventListeners } from './EventManager';
-import { AnyCharacter, PlayerOrNpc } from './GameEntity';
+import { EventEmitter } from "events";
+import { Damage } from "./Damage";
+import { EffectableEntity } from "./EffectableEntity";
+import { IGameState } from "./GameState";
+import { Skill } from "./Skill";
+import { EventListeners } from "./EventManager";
+import { AnyCharacter, PlayerOrNpc } from "./GameEntity";
 
 export type AttributesModifier =
 	| Record<string, (this: Effect, current: number, ...args: any[]) => any>
@@ -16,12 +16,12 @@ export type EffectModifiers = {
 	incomingDamage: (
 		damage: Damage,
 		currentAmount: number,
-		attacker?: PlayerOrNpc
+		attacker?: PlayerOrNpc,
 	) => any;
 	outgoingDamage: (
 		damage: Damage,
 		currentAmount: number,
-		target: PlayerOrNpc
+		target: PlayerOrNpc,
 	) => any;
 	properties: AttributesModifier;
 };
@@ -110,7 +110,7 @@ export interface IEffectConfig {
  * @property {Character} target Character this effect is... effecting
  * @extends EventEmitter
  *
- * @listens Effect#effectAdded
+ * **Listens**: Effect#effectAdded
  */
 export class Effect extends EventEmitter {
 	/** @property {string}    id     filename minus .js */
@@ -138,20 +138,20 @@ export class Effect extends EventEmitter {
 		this.config = Object.assign(
 			{
 				autoActivate: true,
-				description: '',
+				description: "",
 				duration: Infinity,
 				hidden: false,
 				maxStacks: 0,
-				name: 'Unnamed Effect',
+				name: "Unnamed Effect",
 				persists: true,
 				refreshes: false,
 				tickInterval: false,
-				type: 'undef',
+				type: "undef",
 				unique: true,
 				elapsed: 0,
 				paused: 0,
 			},
-			def.config
+			def.config,
 		);
 
 		this.startedAt = 0;
@@ -163,7 +163,7 @@ export class Effect extends EventEmitter {
 				outgoingDamage: (_damage: Damage, current: number) => current,
 				properties: {},
 			} as EffectModifiers,
-			def.modifiers
+			def.modifiers,
 		);
 
 		// internal state saved across player load e.g., stacks, amount of damage shield remaining, whatever
@@ -176,7 +176,7 @@ export class Effect extends EventEmitter {
 				lastTick: -Infinity,
 				cooldownId: null,
 			},
-			def.state
+			def.state,
 		);
 
 		if (this.config.maxStacks) {
@@ -190,7 +190,7 @@ export class Effect extends EventEmitter {
 		}
 
 		if (this.config.autoActivate) {
-			this.on('effectAdded', this.activate);
+			this.on("effectAdded", this.activate);
 		}
 	}
 
@@ -249,11 +249,11 @@ export class Effect extends EventEmitter {
 
 	/**
 	 * Set this effect active
-	 * @fires Effect#effectActivated
+	 * **Fires**: Effect#effectActivated
 	 */
 	activate() {
 		if (!this.target) {
-			throw new Error('Cannot activate an effect without a target');
+			throw new Error("Cannot activate an effect without a target");
 		}
 
 		if (this.active) {
@@ -266,12 +266,12 @@ export class Effect extends EventEmitter {
 		/**
 		 * @event Effect#effectActivated
 		 */
-		this.emit('effectActivated');
+		this.emit("effectActivated");
 	}
 
 	/**
 	 * Deactivate this effect
-	 * @fires Effect#effectDeactivated
+	 * **Fires**: Effect#effectDeactivated
 	 */
 	deactivate() {
 		if (!this.active) {
@@ -283,18 +283,18 @@ export class Effect extends EventEmitter {
 		/**
 		 * @event Effect#effectDeactivated
 		 */
-		this.emit('effectDeactivated');
+		this.emit("effectDeactivated");
 	}
 
 	/**
 	 * Remove this effect from its target
-	 * @fires Effect#remove
+	 * **Fires**: Effect#remove
 	 */
 	remove() {
 		/**
 		 * @event Effect#remove
 		 */
-		this.emit('remove');
+		this.emit("remove");
 	}
 
 	/**
@@ -322,7 +322,7 @@ export class Effect extends EventEmitter {
 	modifyAttribute(attrName: string, currentValue: number) {
 		let modifier = (_?: any) => _;
 		const attributeModifiers = this.modifiers.attributes;
-		if (typeof attributeModifiers === 'function') {
+		if (typeof attributeModifiers === "function") {
 			modifier = (current) => {
 				return attributeModifiers.bind(this)(attrName, current);
 			};
@@ -342,7 +342,7 @@ export class Effect extends EventEmitter {
 	modifyProperty(propertyName: string, currentValue: number) {
 		let modifier = (_: any) => _;
 		const propertyModifiers = this.modifiers.properties;
-		if (typeof propertyModifiers === 'function') {
+		if (typeof propertyModifiers === "function") {
 			modifier = (current) => {
 				return propertyModifiers.bind(this)(propertyName, current);
 			};
@@ -361,7 +361,7 @@ export class Effect extends EventEmitter {
 	modifyIncomingDamage(
 		damage: Damage,
 		currentAmount: number,
-		attacker?: PlayerOrNpc
+		attacker?: PlayerOrNpc,
 	) {
 		const modifier = this.modifiers.incomingDamage.bind(this);
 		return modifier(damage, currentAmount, attacker);
@@ -376,7 +376,7 @@ export class Effect extends EventEmitter {
 	modifyOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: AnyCharacter
+		target: AnyCharacter,
 	) {
 		const modifier = this.modifiers.outgoingDamage.bind(this);
 		return modifier(damage, currentAmount, target as PlayerOrNpc);
@@ -387,10 +387,10 @@ export class Effect extends EventEmitter {
 	 * @return {Object}
 	 */
 	serialize(): ISerializedEffect {
-		let config = Object.assign({}, this.config);
+		const config = Object.assign({}, this.config);
 		config.duration = config.duration === Infinity ? -1 : config.duration;
 
-		let state = Object.assign({}, this.state);
+		const state = Object.assign({}, this.state);
 		// store lastTick as a difference so we can make sure to start where we left off when we hydrate
 		if (state.lastTick && isFinite(state.lastTick as number)) {
 			state.lastTick = Date.now() - ((state.lastTick as number) || 0);
@@ -408,7 +408,7 @@ export class Effect extends EventEmitter {
 
 	/**
 	 * Reinitialize from persisted data
-	 * @param {GameState}
+	 * @param {GameState} state
 	 * @param {Object} data
 	 */
 	hydrate(state: IGameState, data: ISerializedEffect) {

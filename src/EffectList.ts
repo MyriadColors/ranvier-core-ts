@@ -1,9 +1,9 @@
-import { Attribute } from './Attribute';
-import { Damage } from './Damage';
-import { Effect, ISerializedEffect } from './Effect';
-import { EffectableEntity } from './EffectableEntity';
-import { AnyCharacter } from './GameEntity';
-import { IGameState } from './GameState';
+import { Attribute } from "./Attribute";
+import { Damage } from "./Damage";
+import { Effect, ISerializedEffect } from "./Effect";
+import { EffectableEntity } from "./EffectableEntity";
+import { AnyCharacter, PlayerOrNpc } from "./GameEntity";
+import { IGameState } from "./GameState";
 
 /**
  * Self-managing list of effects for a target
@@ -68,7 +68,7 @@ export class EffectList {
 	 */
 	emit(event: string, ...args: any[]) {
 		this.validateEffects();
-		if (event === 'effectAdded' || event === 'effectRemoved') {
+		if (event === "effectAdded" || event === "effectRemoved") {
 			// don't forward these events on from the player as it would cause confusion between Character#effectAdded
 			// and Effect#effectAdded. The former being when any effect gets added to a character, the later is fired on
 			// an effect when it is added to a character
@@ -77,7 +77,7 @@ export class EffectList {
 
 		for (const effect of this.effects) {
 			if (!effect) {
-				throw new Error('Effect was undefined or null.');
+				throw new Error("Effect was undefined or null.");
 			}
 
 			if ((effect as Effect).paused) {
@@ -85,9 +85,9 @@ export class EffectList {
 			}
 
 			if (
-				event === 'updateTick' &&
-				typeof effect.config.tickInterval !== 'boolean' &&
-				typeof effect.config.tickInterval !== 'undefined'
+				event === "updateTick" &&
+				typeof effect.config.tickInterval !== "boolean" &&
+				typeof effect.config.tickInterval !== "undefined"
 			) {
 				const now = Date.now();
 				const sinceLastTick = now - effect.state.lastTick;
@@ -106,14 +106,14 @@ export class EffectList {
 
 	/**
 	 * @param {Effect} effect
-	 * @fires Effect#effectAdded
-	 * @fires Effect#effectStackAdded
-	 * @fires Effect#effectRefreshed
-	 * @fires Character#effectAdded
+	 * **Fires**: Effect#effectAdded
+	 * **Fires**: Effect#effectStackAdded
+	 * **Fires**: Effect#effectRefreshed
+	 * **Fires**: Character#effectAdded
 	 */
 	add(effect: Effect) {
 		if (effect.target) {
-			throw new Error('Cannot add effect, already has a target.');
+			throw new Error("Cannot add effect, already has a target.");
 		}
 
 		// create deep clone of state before proceeding
@@ -127,14 +127,14 @@ export class EffectList {
 				if (currentStacks < maxStacks) {
 					activeEffect.state.stacks = Math.min(
 						maxStacks,
-						(activeEffect.state.stacks || 0) + 1
+						(activeEffect.state.stacks || 0) + 1,
 					);
 
 					/**
 					 * @event Effect#effectStackAdded
 					 * @param {Effect} effect The new effect that is trying to be added
 					 */
-					(activeEffect as Effect).emit('effectStackAdded', effect);
+					(activeEffect as Effect).emit("effectStackAdded", effect);
 					return true;
 				}
 
@@ -143,7 +143,7 @@ export class EffectList {
 					 * @event Effect#effectRefreshed
 					 * @param {Effect} effect The new effect that is trying to be added
 					 */
-					(activeEffect as Effect).emit('effectRefreshed', effect);
+					(activeEffect as Effect).emit("effectRefreshed", effect);
 					return true;
 				}
 
@@ -159,12 +159,12 @@ export class EffectList {
 		/**
 		 * @event Effect#effectAdded
 		 */
-		effect.emit('effectAdded');
+		effect.emit("effectAdded");
 		/**
 		 * @event Character#effectAdded
 		 */
-		this.target.emit('effectAdded', effect);
-		effect.on('remove', () => this.remove(effect));
+		this.target.emit("effectAdded", effect);
+		effect.on("remove", () => this.remove(effect));
 		return true;
 	}
 
@@ -172,11 +172,11 @@ export class EffectList {
 	 * Deactivate and remove an effect
 	 * @param {Effect} effect
 	 * @throws ReferenceError
-	 * @fires Character#effectRemoved
+	 * **Fires**: Character#effectRemoved
 	 */
 	remove(effect: Effect) {
 		if (!this.effects.has(effect)) {
-			throw new ReferenceError('Trying to remove effect that was never added');
+			throw new ReferenceError("Trying to remove effect that was never added");
 		}
 
 		effect.deactivate();
@@ -184,7 +184,7 @@ export class EffectList {
 		/**
 		 * @event Character#effectRemoved
 		 */
-		this.target.emit('effectRemoved', effect);
+		this.target.emit("effectRemoved", effect);
 	}
 
 	/**
@@ -214,7 +214,7 @@ export class EffectList {
 	evaluateAttribute(attr: Attribute) {
 		this.validateEffects();
 
-		let attrName = attr.name;
+		const attrName = attr.name;
 		let attrValue = attr.base || 0;
 
 		for (const effect of this.effects) {
@@ -248,18 +248,22 @@ export class EffectList {
 	/**
 	 * @param {Damage} damage
 	 * @param {number} currentAmount
-	 * @param {?Character} attacker
+	 * @param {Character} attacker
 	 * @return {number}
 	 */
 	evaluateIncomingDamage(
 		damage: Damage,
 		currentAmount: number,
-		_attacker?: AnyCharacter
+		attacker?: AnyCharacter,
 	) {
 		this.validateEffects();
 
 		for (const effect of this.effects) {
-			currentAmount = effect.modifyIncomingDamage(damage, currentAmount);
+			currentAmount = effect.modifyIncomingDamage(
+				damage,
+				currentAmount,
+				attacker as PlayerOrNpc,
+			);
 		}
 
 		// Don't allow a modifier to make damage go negative, it would cause weird
@@ -276,7 +280,7 @@ export class EffectList {
 	evaluateOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: AnyCharacter
+		target: AnyCharacter,
 	) {
 		this.validateEffects();
 
@@ -284,7 +288,7 @@ export class EffectList {
 			currentAmount = effect.modifyOutgoingDamage(
 				damage,
 				currentAmount,
-				target
+				target,
 			);
 		}
 
@@ -294,7 +298,7 @@ export class EffectList {
 
 	serialize() {
 		this.validateEffects();
-		let serialized = [];
+		const serialized = [];
 		for (const effect of this.effects) {
 			if (!effect.config.persists) {
 				continue;

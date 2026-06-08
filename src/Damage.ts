@@ -1,4 +1,4 @@
-import { PlayerOrNpc } from './GameEntity';
+import { PlayerOrNpc } from "./GameEntity";
 
 /**
  * @property {string} attribute Attribute the damage is going to apply to
@@ -26,16 +26,16 @@ export class Damage {
 		amount: number,
 		attacker: PlayerOrNpc,
 		source: any,
-		metadata: Partial<Record<string, unknown>> = {}
+		metadata: Partial<Record<string, unknown>> = {},
 	) {
 		if (!Number.isFinite(amount)) {
 			throw new TypeError(
-				`Damage amount must be a finite Number, got ${amount}.`
+				`Damage amount must be a finite Number, got ${amount}.`,
 			);
 		}
 
-		if (typeof attribute !== 'string') {
-			throw new TypeError('Damage attribute name must be a string');
+		if (typeof attribute !== "string") {
+			throw new TypeError("Damage attribute name must be a string");
 		}
 
 		this.attacker = attacker || null;
@@ -57,14 +57,18 @@ export class Damage {
 			amount = this.attacker.evaluateOutgoingDamage(this, amount, target);
 		}
 
-		return target.evaluateIncomingDamage(this, amount, this.attacker || undefined);
+		return target.evaluateIncomingDamage(
+			this,
+			amount,
+			this.attacker || undefined,
+		);
 	}
 
 	/**
 	 * Actually lower the attribute
 	 * @param {Character} target
-	 * @fires Character#hit
-	 * @fires Character#damaged
+	 * **Fires**: Character#hit
+	 * **Fires**: Character#damaged
 	 */
 	commit(target: PlayerOrNpc) {
 		const finalAmount = this.evaluate(target);
@@ -77,13 +81,13 @@ export class Damage {
 			 * @param {Character} target
 			 * @param {Number} finalAmount
 			 */
-			this.attacker.emit('hit', this, target, finalAmount);
+			this.attacker.emit("hit", this, target, finalAmount);
 		}
 		/**
 		 * @event Character#damaged
 		 * @param {Damage} damage
 		 * @param {Number} finalAmount
 		 */
-		target.emit('damaged', this, finalAmount);
+		target.emit("damaged", this, finalAmount);
 	}
 }

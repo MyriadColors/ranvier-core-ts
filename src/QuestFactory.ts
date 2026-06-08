@@ -1,9 +1,9 @@
-import { EntityReference } from './EntityReference';
-import { IGameState } from './GameState';
-import { Logger } from './Logger';
-import { Player } from './Player';
-import { IQuestDef, ISerializedQuestDef, Quest } from './Quest';
-import { ISerializedQuestGoal } from './QuestGoal';
+import { EntityReference } from "./EntityReference";
+import { IGameState } from "./GameState";
+import { Logger } from "./Logger";
+import { Player } from "./Player";
+import { IQuestDef, ISerializedQuestDef, Quest } from "./Quest";
+import { ISerializedQuestGoal } from "./QuestGoal";
 
 export interface IQuestFactoryDef {
 	area: string;
@@ -67,7 +67,7 @@ export class QuestFactory {
 		}
 
 		return quest.config.requires.every((requiresRef) =>
-			tracker.isComplete(requiresRef)
+			tracker.isComplete(requiresRef),
 		);
 	}
 
@@ -82,7 +82,7 @@ export class QuestFactory {
 		GameState: IGameState,
 		qid: EntityReference,
 		player: Player,
-		state: ISerializedQuestDef[] = []
+		state: ISerializedQuestDef[] = [],
 	) {
 		const quest = this.quests.get(qid);
 		if (!quest) {
@@ -95,28 +95,28 @@ export class QuestFactory {
 			const goalType = GameState.QuestGoalManager.get(goal.type);
 			if (!goalType) {
 				throw new Error(
-					`QuestFactory did not find the goal with the type [${goal.type}]`
+					`QuestFactory did not find the goal with the type [${goal.type}]`,
 				);
 			}
 			instance.addGoal(new goalType(instance, goal.config, player));
 		}
 
-		instance.on('progress', (progress: ISerializedQuestGoal['progress']) => {
-			player.emit('questProgress', instance, progress);
+		instance.on("progress", (progress: ISerializedQuestGoal["progress"]) => {
+			player.emit("questProgress", instance, progress);
 			player.save();
 		});
 
-		instance.on('start', () => {
-			player.emit('questStart', instance);
-			instance.emit('progress', instance.getProgress());
+		instance.on("start", () => {
+			player.emit("questStart", instance);
+			instance.emit("progress", instance.getProgress());
 		});
 
-		instance.on('turn-in-ready', () => {
-			player.emit('questTurnInReady', instance);
+		instance.on("turn-in-ready", () => {
+			player.emit("questTurnInReady", instance);
 		});
 
-		instance.on('complete', () => {
-			player.emit('questComplete', instance);
+		instance.on("complete", () => {
+			player.emit("questComplete", instance);
 			player.questTracker.complete(instance.entityReference);
 
 			if (!quest.config.rewards) {
@@ -130,12 +130,12 @@ export class QuestFactory {
 
 					if (!rewardClass) {
 						throw new Error(
-							`Quest [${qid}] has invalid reward type ${reward.type}`
+							`Quest [${qid}] has invalid reward type ${reward.type}`,
 						);
 					}
 
 					rewardClass.reward(GameState, instance, reward.config, player);
-					player.emit('questReward', reward);
+					player.emit("questReward", reward);
 				} catch (e) {
 					Logger.warn(`Error in quest ${qid} happened to ${player.name}.`);
 					Logger.warn(e);
@@ -149,11 +149,11 @@ export class QuestFactory {
 	}
 
 	/**
-	 * @param {string} areaName
+	 * @param {string} area
 	 * @param {number} id
 	 * @return {string}
 	 */
 	makeQuestKey(area: string, id: string | number) {
-		return area + ':' + id;
+		return area + ":" + id;
 	}
 }

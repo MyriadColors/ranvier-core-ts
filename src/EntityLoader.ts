@@ -24,7 +24,7 @@ export class EntityLoader {
 	config: IEntityLoaderConfig;
 
 	/**
-	 * @param {DataSource}
+	 * @param {DataSource} dataSource
 	 * @param {object} config
 	 */
 	constructor(dataSource: IDataSource, config: IEntityLoaderConfig = {}) {

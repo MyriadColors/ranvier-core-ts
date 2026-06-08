@@ -1,7 +1,7 @@
-import { Area } from './Area';
-import { EntityFactory } from './EntityFactory';
-import { EntityReference } from './EntityReference';
-import { IItemDef, Item } from './Item';
+import { Area } from "./Area";
+import { EntityFactory } from "./EntityFactory";
+import { EntityReference } from "./EntityReference";
+import { IItemDef, Item } from "./Item";
 
 /**
  * Stores definitions of items to allow for easy creation/cloning of objects

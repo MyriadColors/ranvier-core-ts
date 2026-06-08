@@ -5,13 +5,13 @@
  * @namespace ChannelAudience
  */
 
-import { Area } from './Area';
-import { Character } from './Character';
-import { AnyGameEntity, PlayerOrNpc } from './GameEntity';
-import { IGameState } from './GameState';
-import { Npc } from './Npc';
-import { Player } from './Player';
-import { Room } from './Room';
+import { Area } from "./Area";
+import type { Channel } from "./Channel";
+import { AnyGameEntity, PlayerOrNpc } from "./GameEntity";
+import { IGameState } from "./GameState";
+import { Npc } from "./Npc";
+import { Player } from "./Player";
+import { Room } from "./Room";
 
 export type AreaBroadcastable = Player | Npc | Room | Area;
 
@@ -33,10 +33,9 @@ export class ChannelAudience {
 	/** @param {Character} sender */
 	sender?: PlayerOrNpc;
 	/** @param {string} message */
-	message: string = '';
-	constructor(...args: any[]) {}
+	message: string = "";
 	/**
-	 * Configure the current state for the audience. Called by {@link Channel#send}
+	 * Configure the current state for the audience. Called by {@link Channel.send}
 	 * @param {object} options
 	 * @param {GameState} options.state
 	 * @param {Character} options.sender

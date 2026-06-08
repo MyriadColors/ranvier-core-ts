@@ -1,7 +1,7 @@
-import { Character } from './Character';
-import { PlayerOrNpc } from './GameEntity';
-import { Heal } from './Heal';
-import { Room } from './Room';
+import { Character } from "./Character";
+import { PlayerOrNpc } from "./GameEntity";
+import { Heal } from "./Heal";
+import { Room } from "./Room";
 
 /**
  * Heal class used for applying healing to multiple entities in a room. By
@@ -10,15 +10,15 @@ import { Room } from './Room';
  */
 export class AreaOfEffectHeal extends Heal {
 	/**
-	 * @param {Room|Character} target
+	 * @param {Room|Character} room
 	 * @throws RangeError
-	 * @fires Room#areaHeal
+	 * **Fires**: Room#areaHeal
 	 */
 	commit(room: Room | PlayerOrNpc) {
 		if (!(room instanceof Room)) {
 			if (!(room instanceof Character)) {
 				throw new RangeError(
-					'AreaOfEffectHeal commit target must be an instance of Room or Character'
+					"AreaOfEffectHeal commit target must be an instance of Room or Character",
 				);
 			}
 
@@ -36,7 +36,7 @@ export class AreaOfEffectHeal extends Heal {
 		 * @param {Heal} heal
 		 * @param {Array<Character>} targets
 		 */
-		room.emit('areaHeal', this, targets);
+		room.emit("areaHeal", this, targets);
 	}
 
 	/**

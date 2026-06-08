@@ -1,8 +1,8 @@
-import { EventEmitter } from 'events';
-import { TelnetStream } from '../types/TelnetStream';
-import { TelnetSocket } from '../types/TelnetSocket';
-import { RanvierWebSocket } from '../types/RanvierWebSocket';
-import { WebsocketStream } from '../types/WebsocketStream';
+import { EventEmitter } from "events";
+import { TelnetStream } from "../types/TelnetStream";
+import { TelnetSocket } from "../types/TelnetSocket";
+import { RanvierWebSocket } from "../types/RanvierWebSocket";
+import { WebsocketStream } from "../types/WebsocketStream";
 
 export type StreamType = TelnetStream | WebsocketStream;
 export type SocketType = TelnetSocket | RanvierWebSocket;
@@ -21,7 +21,7 @@ export class TransportStream extends EventEmitter {
 		return true;
 	}
 
-	write(message: string, encoding?: string) {
+	write(...args: any[]) {
 		/* noop */
 	}
 
@@ -34,11 +34,11 @@ export class TransportStream extends EventEmitter {
 	 */
 	command<T, K extends keyof T>(this: T, command: string, ...args: any[]): any {
 		if (!command || !command.length) {
-			throw new RangeError('Must specify a command to the stream');
+			throw new RangeError("Must specify a command to the stream");
 		}
 
-		const methodName = 'execute' + command[0].toUpperCase() + command.substr(1);
-		if (typeof this[methodName as K] === 'function') {
+		const methodName = "execute" + command[0].toUpperCase() + command.substr(1);
+		if (typeof this[methodName as K] === "function") {
 			const commandMethod = this[methodName as K] as unknown as (
 				...args: any[]
 			) => any;
@@ -46,27 +46,27 @@ export class TransportStream extends EventEmitter {
 		}
 	}
 
-	address(...args: any[]) {
+	address() {
 		return null;
 	}
 
-	end(...args: any[]) {
+	end() {
 		/* noop */
 	}
 
-	setEncoding(...args: any[]) {
+	setEncoding() {
 		/* noop */
 	}
 
-	pause(...args: any[]) {
+	pause() {
 		/* noop */
 	}
 
-	resume(...args: any[]) {
+	resume() {
 		/* noop */
 	}
 
-	destroy(...args: any[]) {
+	destroy() {
 		/* noop */
 	}
 
@@ -77,8 +77,8 @@ export class TransportStream extends EventEmitter {
 	attach(socket: SocketType) {
 		this.socket = socket;
 
-		this.socket.on('close', (_?: any) => {
-			this.emit('close');
+		this.socket.on("close", () => {
+			this.emit("close");
 		});
 	}
 }

@@ -1,5 +1,5 @@
-import { PlayerOrNpc } from './GameEntity';
-import { Party } from './Party';
+import { PlayerOrNpc } from "./GameEntity";
+import { Party } from "./Party";
 
 /**
  * Keeps track of active in game parties and is used to create new parties
@@ -22,7 +22,6 @@ export class PartyManager extends Set<Party> {
 		if (party) {
 			this.delete(party);
 			party.disband();
-			party = null;
 		}
 	}
 }

@@ -1,16 +1,17 @@
-import { BehaviorManager } from './BehaviorManager';
-import { EffectableEntity } from './EffectableEntity';
-import { PruneableEntity } from './GameEntity';
-import { Logger } from './Logger';
-import { Constructor } from './Util';
+import { BehaviorManager } from "./BehaviorManager";
+import { EffectableEntity } from "./EffectableEntity";
+import { PruneableEntity } from "./GameEntity";
+import { Logger } from "./Logger";
+import { Constructor } from "./Util";
 
 /**
  * @ignore
- * @exports ScriptableFn
  * @param {*} parentClass
  * @return {module:ScriptableFn~Scriptable}
  */
-export const Scriptable = <TBase extends Constructor<EffectableEntity>>(ParentClass: TBase) =>
+export const Scriptable = <TBase extends Constructor<EffectableEntity>>(
+	ParentClass: TBase,
+) =>
 	/**
 	 * Mixin for entities that can have behaviors attached from a BehaviorManager
 	 * @mixin
@@ -55,21 +56,21 @@ export const Scriptable = <TBase extends Constructor<EffectableEntity>>(ParentCl
 		 */
 		setupBehaviors(manager: BehaviorManager) {
 			if (!this.behaviors) {
-				throw new Error('Behaviors are null or undefined.');
+				throw new Error("Behaviors are null or undefined.");
 			}
 
-			for (let [behaviorName, config] of this.behaviors) {
-				let behavior = manager.get(behaviorName);
+			for (const [behaviorName, config] of this.behaviors) {
+				const behavior = manager.get(behaviorName);
 				if (!behavior) {
 					Logger.warn(
-						`No script found for [${this.constructor.name}] behavior '${behaviorName}'`
+						`No script found for [${this.constructor.name}] behavior '${behaviorName}'`,
 					);
 					continue;
 				}
 
 				// behavior may be a boolean in which case it will be `behaviorName: true`
-				config = config === true ? {} : config;
-				behavior.attach(this, config);
+				const behaviorConfig = config === true ? {} : config;
+				behavior.attach(this, behaviorConfig);
 			}
 		}
 	};

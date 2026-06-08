@@ -1,9 +1,9 @@
-import { EventEmitter } from 'events';
-import { EntityReference } from './EntityReference';
-import { IGameState } from './GameState';
-import { Player } from './Player';
-import { IQuestGoalDef, ISerializedQuestGoal, QuestGoal } from './QuestGoal';
-import { IQuestRewardDef } from './QuestReward';
+import { EventEmitter } from "events";
+import { EntityReference } from "./EntityReference";
+import { IGameState } from "./GameState";
+import { Player } from "./Player";
+import { IQuestGoalDef, ISerializedQuestGoal, QuestGoal } from "./QuestGoal";
+import { IQuestRewardDef } from "./QuestReward";
 
 export interface IQuestDef {
 	id: string;
@@ -54,7 +54,7 @@ export class Quest extends EventEmitter {
 		GameState: IGameState,
 		id: string,
 		config: IQuestDef,
-		player: Player
+		player: Player,
 	) {
 		super();
 
@@ -62,8 +62,8 @@ export class Quest extends EventEmitter {
 		this.entityReference = config.entityReference;
 		this.config = Object.assign(
 			{
-				title: 'Missing Quest Title',
-				description: 'Missing Quest Description',
+				title: "Missing Quest Title",
+				description: "Missing Quest Description",
 				completionMessage: null,
 				requires: [],
 				level: 1,
@@ -72,7 +72,7 @@ export class Quest extends EventEmitter {
 				rewards: [],
 				goals: [],
 			},
-			config
+			config,
 		);
 
 		this.player = player;
@@ -89,7 +89,7 @@ export class Quest extends EventEmitter {
 	emit(event: string | symbol, ...args: any[]) {
 		const result = super.emit(event, ...args);
 
-		if (event === 'progress') {
+		if (event === "progress") {
 			// don't proxy progress event
 			return result;
 		}
@@ -103,12 +103,12 @@ export class Quest extends EventEmitter {
 
 	addGoal(goal: QuestGoal) {
 		this.goals.push(goal);
-		goal.on('progress', () => this.onProgressUpdated());
+		goal.on("progress", () => this.onProgressUpdated());
 	}
 
 	/**
-	 * @fires Quest#turn-in-ready
-	 * @fires Quest#progress
+	 * **Fires**: Quest#turn-in-ready
+	 * **Fires**: Quest#progress
 	 */
 	onProgressUpdated() {
 		const progress = this.getProgress();
@@ -120,7 +120,7 @@ export class Quest extends EventEmitter {
 				/**
 				 * @event Quest#turn-in-ready
 				 */
-				this.emit('turn-in-ready');
+				this.emit("turn-in-ready");
 			}
 			return;
 		}
@@ -129,7 +129,7 @@ export class Quest extends EventEmitter {
 		 * @event Quest#progress
 		 * @param {object} progress
 		 */
-		this.emit('progress', progress);
+		this.emit("progress", progress);
 	}
 
 	/**
@@ -137,7 +137,7 @@ export class Quest extends EventEmitter {
 	 */
 	getProgress() {
 		let overallPercent = 0;
-		let overallDisplay: string[] = [];
+		const overallDisplay: string[] = [];
 		this.goals.forEach((goal) => {
 			const goalProgress = goal.getProgress();
 			overallPercent += goalProgress.percent;
@@ -146,7 +146,7 @@ export class Quest extends EventEmitter {
 
 		return {
 			percent: Math.round(overallPercent / this.goals.length),
-			display: overallDisplay.join('\r\n'),
+			display: overallDisplay.join("\r\n"),
 		};
 	}
 
@@ -173,13 +173,13 @@ export class Quest extends EventEmitter {
 	}
 
 	/**
-	 * @fires Quest#complete
+	 * **Fires**: Quest#complete
 	 */
 	complete() {
 		/**
 		 * @event Quest#complete
 		 */
-		this.emit('complete');
+		this.emit("complete");
 		for (const goal of this.goals) {
 			goal.complete();
 		}

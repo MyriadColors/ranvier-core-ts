@@ -1,14 +1,14 @@
-import { ISerializedEffectableEntity } from './EffectableEntity';
-import { IItemDef, Item } from './Item';
-import { IInventoryDef, Inventory, InventoryFullError } from './Inventory';
-import { Room } from './Room';
-import { Config } from './Config';
-import { Party } from './Party';
-import { EquipSlotTakenError, EquipAlreadyEquippedError } from './EquipErrors';
-import { EntityReference } from './EntityReference';
-import { Equipment } from './Equipment';
-import { GameEntity } from './GameEntity';
-import { EntityDefinitionBase } from './EntityFactory';
+import { ISerializedEffectableEntity } from "./EffectableEntity";
+import type { Broadcast } from "./Broadcast";
+import { IItemDef, Item } from "./Item";
+import { IInventoryDef, Inventory, InventoryFullError } from "./Inventory";
+import { Room } from "./Room";
+import { Config } from "./Config";
+import { Party } from "./Party";
+import { EquipSlotTakenError, EquipAlreadyEquippedError } from "./EquipErrors";
+import { EntityReference } from "./EntityReference";
+import { Equipment } from "./Equipment";
+import { GameEntity } from "./GameEntity";
 
 export interface ICharacterConfig extends ISerializedEffectableEntity {
 	/** @property {string}     name       Name shown on look/who/login */
@@ -22,7 +22,7 @@ export interface ICharacterConfig extends ISerializedEffectableEntity {
 	level: number;
 	/** @property {Room}       room       Room the character is currently in */
 	room: Room;
-	metadata: object;
+	metadata: Record<string, unknown>;
 }
 
 export interface ISerializedCharacter extends ISerializedEffectableEntity {
@@ -42,7 +42,7 @@ export interface ISerializedCharacter extends ISerializedEffectableEntity {
  * @property {Room}       room       Room the character is currently in
  *
  * @extends EffectableEntity
- * @mixes Metadatable
+ * **Mixes**: Metadatable
  */
 export class Character extends GameEntity {
 	/** @property {string}     name       Name shown on look/who/login */
@@ -96,7 +96,7 @@ export class Character extends GameEntity {
 	 * Start combat with a given target.
 	 * @param {Character} target
 	 * @param {?number}   lag    Optional milliseconds of lag to apply before the first attack
-	 * @fires Character#combatStart
+	 * **Fires**: Character#combatStart
 	 */
 	initiateCombat(target: Character, lag: number = 0) {
 		if (!this.isInCombat()) {
@@ -106,7 +106,7 @@ export class Character extends GameEntity {
 			 * Fired when Character#initiateCombat is called
 			 * @event Character#combatStart
 			 */
-			this.emit('combatStart');
+			this.emit("combatStart");
 		}
 
 		if (this.isInCombat(target)) {
@@ -136,7 +136,7 @@ export class Character extends GameEntity {
 
 	/**
 	 * @param {Character} target
-	 * @fires Character#combatantAdded
+	 * **Fires**: Character#combatantAdded
 	 */
 	addCombatant(target: Character) {
 		if (this.isInCombat(target)) {
@@ -149,13 +149,13 @@ export class Character extends GameEntity {
 		 * @event Character#combatantAdded
 		 * @param {Character} target
 		 */
-		this.emit('combatantAdded', target);
+		this.emit("combatantAdded", target);
 	}
 
 	/**
 	 * @param {Character} target
-	 * @fires Character#combatantRemoved
-	 * @fires Character#combatEnd
+	 * **Fires**: Character#combatantRemoved
+	 * **Fires**: Character#combatEnd
 	 */
 	removeCombatant(target: Character) {
 		if (!this.combatants.has(target)) {
@@ -169,13 +169,13 @@ export class Character extends GameEntity {
 		 * @event Character#combatantRemoved
 		 * @param {Character} target
 		 */
-		this.emit('combatantRemoved', target);
+		this.emit("combatantRemoved", target);
 
 		if (!this.combatants.size) {
 			/**
 			 * @event Character#combatEnd
 			 */
-			this.emit('combatEnd');
+			this.emit("combatEnd");
 		}
 	}
 
@@ -198,8 +198,8 @@ export class Character extends GameEntity {
 	 *
 	 * @throws EquipSlotTakenError
 	 * @throws EquipAlreadyEquippedError
-	 * @fires Character#equip
-	 * @fires Item#equip
+	 * **Fires**: Character#equip
+	 * **Fires**: Item#equip
 	 */
 	equip(item: Item, slot: string) {
 		if (!(this.equipment instanceof Map)) {
@@ -225,13 +225,13 @@ export class Character extends GameEntity {
 		 * @event Item#equip
 		 * @param {Character} equipper
 		 */
-		item.emit('equip', this);
+		item.emit("equip", this);
 		/**
 		 * @event Character#equip
 		 * @param {string} slot
 		 * @param {Item} item
 		 */
-		this.emit('equip', slot, item);
+		this.emit("equip", slot, item);
 	}
 
 	/**
@@ -239,8 +239,8 @@ export class Character extends GameEntity {
 	 * @param {string} slot
 	 *
 	 * @throws InventoryFullError
-	 * @fires Item#unequip
-	 * @fires Character#unequip
+	 * **Fires**: Item#unequip
+	 * **Fires**: Character#unequip
 	 */
 	unequip(slot: string) {
 		if (!(this.equipment instanceof Map)) {
@@ -263,13 +263,13 @@ export class Character extends GameEntity {
 		 * @event Item#unequip
 		 * @param {Character} equipper
 		 */
-		item.emit('unequip', this);
+		item.emit("unequip", this);
 		/**
 		 * @event Character#unequip
 		 * @param {string} slot
 		 * @param {Item} item
 		 */
-		this.emit('unequip', slot, item);
+		this.emit("unequip", slot, item);
 		this.addItem(item);
 	}
 
@@ -304,7 +304,7 @@ export class Character extends GameEntity {
 			return false;
 		}
 
-		for (const [uuid, item] of this.inventory) {
+		for (const [, item] of this.inventory) {
 			if (item.entityReference === itemReference) {
 				return item as Item;
 			}
@@ -328,7 +328,7 @@ export class Character extends GameEntity {
 		this.inventory = this.inventory || new Inventory();
 		// Default max inventory size config
 		if (!this.isNpc && !isFinite(this.inventory.getMax())) {
-			this.inventory.setMax(Config.get('defaultMaxPlayerInventory', 20));
+			this.inventory.setMax(Config.get("defaultMaxPlayerInventory", 20));
 		}
 	}
 
@@ -348,12 +348,12 @@ export class Character extends GameEntity {
 		 * @event Character#followed
 		 * @param {Character} target
 		 */
-		this.emit('followed', target);
+		this.emit("followed", target);
 	}
 
 	/**
 	 * Stop following whoever the character was following
-	 * @fires Character#unfollowed
+	 * **Fires**: Character#unfollowed
 	 */
 	unfollow() {
 		if (!this.following) {
@@ -365,13 +365,13 @@ export class Character extends GameEntity {
 		 * @event Character#unfollowed
 		 * @param {Character} following
 		 */
-		this.emit('unfollowed', this.following);
+		this.emit("unfollowed", this.following);
 		this.following = null;
 	}
 
 	/**
 	 * @param {Character} follower
-	 * @fires Character#gainedFollower
+	 * **Fires**: Character#gainedFollower
 	 */
 	addFollower(follower: Character) {
 		this.followers.add(follower);
@@ -380,12 +380,12 @@ export class Character extends GameEntity {
 		 * @event Character#gainedFollower
 		 * @param {Character} follower
 		 */
-		this.emit('gainedFollower', follower);
+		this.emit("gainedFollower", follower);
 	}
 
 	/**
 	 * @param {Character} follower
-	 * @fires Character#lostFollower
+	 * **Fires**: Character#lostFollower
 	 */
 	removeFollower(follower: Character) {
 		this.followers.delete(follower);
@@ -394,7 +394,7 @@ export class Character extends GameEntity {
 		 * @event Character#lostFollower
 		 * @param {Character} follower
 		 */
-		this.emit('lostFollower', follower);
+		this.emit("lostFollower", follower);
 	}
 
 	/**
@@ -422,7 +422,7 @@ export class Character extends GameEntity {
 		return Object.assign(super.serialize(), {
 			level: this.level,
 			name: this.name,
-			room: this.room?.entityReference || 'void',
+			room: this.room?.entityReference || "void",
 		});
 	}
 

@@ -1,5 +1,5 @@
-import { EntityReference } from './EntityReference';
-import { Room } from './Room';
+import { EntityReference } from "./EntityReference";
+import { Room } from "./Room";
 
 /**
  * Keeps track of all the individual rooms in the game

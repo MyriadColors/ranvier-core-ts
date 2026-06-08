@@ -1,6 +1,6 @@
-import { Effect, IEffectConfig, IEffectDef, IEffectState } from './Effect';
-import { EventManager } from './EventManager';
-import { IGameState } from './GameState';
+import { Effect, IEffectConfig, IEffectDef, IEffectState } from "./Effect";
+import { EventManager } from "./EventManager";
+import { IGameState } from "./GameState";
 
 export interface IEffectFactoryDef {
 	definition: IEffectDef;
@@ -26,10 +26,10 @@ export class EffectFactory {
 			return;
 		}
 
-		let definition = Object.assign({}, config);
+		const definition = Object.assign({}, config);
 		delete definition.listeners;
 		let listeners = config.listeners || {};
-		if (typeof listeners === 'function') {
+		if (typeof listeners === "function") {
 			listeners = listeners(state);
 		}
 
@@ -66,7 +66,7 @@ export class EffectFactory {
 		if (!entry || !entry.definition) {
 			throw new Error(`No valid entry definition found for effect ${id}.`);
 		}
-		let def = Object.assign({}, entry.definition);
+		const def = Object.assign({}, entry.definition);
 		def.config = Object.assign(def.config || {}, config || {});
 		def.state = Object.assign(def.state || {}, state || {});
 		const effect = new Effect(id, def);

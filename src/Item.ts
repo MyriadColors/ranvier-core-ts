@@ -1,24 +1,24 @@
 // import uuid from "uuid/v4";
 
-import { Area } from './Area';
-import { GameEntity } from './GameEntity';
+import { Area } from "./Area";
+import { GameEntity } from "./GameEntity";
 import {
 	IInventoryDef,
 	Inventory,
 	InventoryEntityType,
 	ISerializedInventory,
-} from './Inventory';
-import { Logger } from './Logger';
-import { ItemType } from './ItemType';
-import { Room } from './Room';
-import { IGameState } from './GameState';
-import { Character } from './Character';
-import { ISerializedEffect } from './Effect';
-import { SerializedAttributes } from './EffectableEntity';
-import { ItemManager } from './ItemManager';
-import { EntityDefinitionBase } from './EntityFactory';
+} from "./Inventory";
+import { Logger } from "./Logger";
+import { ItemType } from "./ItemType";
+import { Room } from "./Room";
+import { IGameState } from "./GameState";
+import { Character } from "./Character";
+import { ISerializedEffect } from "./Effect";
+import { SerializedAttributes } from "./EffectableEntity";
+import { ItemManager } from "./ItemManager";
+import { EntityDefinitionBase } from "./EntityFactory";
 
-const uuid = require('uuid/v4');
+import { v4 as uuid } from "uuid";
 
 export declare interface IItemDef extends EntityDefinitionBase {
 	name: string;
@@ -117,7 +117,7 @@ export class Item extends GameEntity {
 	__manager?: ItemManager;
 	__pruned: boolean = false;
 
-	static validate = ['keywords', 'name', 'id'];
+	static validate = ["keywords", "name", "id"];
 
 	constructor(area: Area, item: IItemDef) {
 		super(item);
@@ -125,7 +125,7 @@ export class Item extends GameEntity {
 		for (const prop of Item.validate) {
 			if (!(prop in item)) {
 				throw new ReferenceError(
-					`Item in area [${area.name}] missing required property [${prop}]`
+					`Item in area [${area.name}] missing required property [${prop}]`,
 				);
 			}
 		}
@@ -134,7 +134,7 @@ export class Item extends GameEntity {
 		this.metadata = item.metadata || {};
 		this.behaviors = new Map(Object.entries(item.behaviors || {}));
 		this.defaultItems = item.items || [];
-		this.description = item.description || 'Nothing special.';
+		this.description = item.description || "Nothing special.";
 		this.entityReference = item.entityReference; // EntityFactory key
 		this.id = item.id;
 
@@ -146,10 +146,10 @@ export class Item extends GameEntity {
 		this.keywords = item.keywords;
 		this.name = item.name;
 		this.room = item.room || null;
-		this.roomDesc = item.roomDesc || '';
+		this.roomDesc = item.roomDesc || "";
 		this.script = item.script || null;
 
-		if (typeof item.type === 'string') {
+		if (typeof item.type === "string") {
 			this.type = item.type as ItemType;
 		} else {
 			this.type = item.type || ItemType.OBJECT;
@@ -271,12 +271,12 @@ export class Item extends GameEntity {
 
 	hydrate(state: IGameState, serialized?: IItemDef) {
 		if (this.__hydrated) {
-			Logger.warn('Attempted to hydrate already hydrated item.');
+			Logger.warn("Attempted to hydrate already hydrated item.");
 			return false;
 		}
 
 		this.__manager = state.ItemManager;
-		super.hydrate(state, serialized);
+		super.hydrate(state);
 
 		state.ItemManager.add(this);
 
@@ -293,18 +293,18 @@ export class Item extends GameEntity {
 		this.name = serialized?.name || this.name;
 		this.roomDesc = serialized?.roomDesc || this.roomDesc;
 		this.metadata = JSON.parse(
-			JSON.stringify(serialized?.metadata || this.metadata)
+			JSON.stringify(serialized?.metadata || this.metadata),
 		);
 
 		this.closed = Boolean(
-			serialized && 'closed' in serialized ? serialized.closed : this.closed
+			serialized && "closed" in serialized ? serialized.closed : this.closed,
 		);
 
 		this.locked = Boolean(
-			serialized && 'locked' in serialized ? serialized.locked : this.locked
+			serialized && "locked" in serialized ? serialized.locked : this.locked,
 		);
 
-		if (typeof this.area === 'string') {
+		if (typeof this.area === "string") {
 			this.area = state.AreaManager.getArea(this.area);
 		}
 
@@ -314,9 +314,9 @@ export class Item extends GameEntity {
 		} else {
 			// otherwise load its default inv
 			this.defaultItems.forEach((defaultItemId: IItemDef | string) => {
-				if (typeof defaultItemId == 'string') {
+				if (typeof defaultItemId == "string") {
 					Logger.verbose(
-						`\tDIST: Adding item [${defaultItemId}] to item [${this.name}]`
+						`\tDIST: Adding item [${defaultItemId}] to item [${this.name}]`,
 					);
 					const newItem = state.ItemFactory.create(this.area, defaultItemId);
 					newItem.hydrate(state);

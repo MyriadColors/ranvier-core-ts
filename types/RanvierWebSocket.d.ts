@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events';
-import WebSocket from 'ws';
+import { EventEmitter } from "events";
+import WebSocket from "ws";
 
 export declare class RanvierWebSocket extends EventEmitter {
 	socket: WebSocket | null;

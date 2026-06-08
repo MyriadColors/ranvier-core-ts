@@ -1,0 +1,21 @@
+{
+	"entryPoints": ["src/**/*.ts", "types/**/*.d.ts"],
+	"out": "docs/api",
+	"name": "Ranvier Core API Reference",
+	"includeVersion": true,
+	"excludePrivate": true,
+	"excludeInternal": true,
+	"readme": "README.md",
+	"githubPages": true,
+	"externalSymbolLinkMappings": {
+		"typescript": {
+			"Map": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
+			"Map.entries": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/entries"
+		}
+	},
+	"validation": {
+		"notExported": true,
+		"invalidLink": true,
+		"notDocumented": false
+	}
+}

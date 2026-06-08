@@ -1,15 +1,15 @@
-import { Area } from './Area';
-import { Config } from './Config';
-import { ISerializedEffect } from './Effect';
-import { SerializedAttributes } from './EffectableEntity';
-import { EntityDefinitionBase } from './EntityFactory';
-import { EntityReference } from './EntityReference';
-import { GameEntity } from './GameEntity';
-import { IGameState } from './GameState';
-import { Item } from './Item';
-import { Logger } from './Logger';
-import { Npc } from './Npc';
-import { Player } from './Player';
+import { Area } from "./Area";
+import { Config } from "./Config";
+import { ISerializedEffect } from "./Effect";
+import { SerializedAttributes } from "./EffectableEntity";
+import { EntityDefinitionBase } from "./EntityFactory";
+import { EntityReference } from "./EntityReference";
+import { GameEntity } from "./GameEntity";
+import { IGameState } from "./GameState";
+import { Item } from "./Item";
+import { Logger } from "./Logger";
+import { Npc } from "./Npc";
+import { Player } from "./Player";
 
 export interface IDoor {
 	lockedBy?: EntityReference;
@@ -69,7 +69,7 @@ export interface IRoomNpcDef {
  * @extends GameEntity
  */
 
-type ComposableDef<T> = Record<string, Partial<T> | boolean>;
+export type ComposableDef<T> = Record<string, Partial<T> | boolean>;
 export class Room extends GameEntity {
 	def: IRoomDef;
 	area: Area;
@@ -82,8 +82,8 @@ export class Room extends GameEntity {
 	script: string | null = null;
 	behaviors: Map<string, any>;
 	coordinates: { x: number; y: number; z: number } | null = null;
-	description: string = '';
-	entityReference: EntityReference = '';
+	description: string = "";
+	entityReference: EntityReference = "";
 	exits: IExit[] = [];
 	id: string;
 	title: string;
@@ -95,13 +95,13 @@ export class Room extends GameEntity {
 	players: Set<Player>;
 	spawnedNpcs: Set<Npc>;
 
-	static validate: string[] = ['title', 'description', 'id'];
+	static validate: string[] = ["title", "description", "id"];
 	constructor(area: Area, def: IRoomDef) {
 		super(def);
 		for (const prop of Room.validate) {
 			if (!(prop in def)) {
 				throw new Error(
-					`ERROR: AREA[${area.name}] Room does not have required property ${prop}`
+					`ERROR: AREA[${area.name}] Room does not have required property ${prop}`,
 				);
 			}
 		}
@@ -119,16 +119,16 @@ export class Room extends GameEntity {
 						x: def.coordinates[0],
 						y: def.coordinates[1],
 						z: def.coordinates[2],
-				  }
+					}
 				: null;
 		this.description = def.description;
-		this.entityReference = this.area.name + ':' + def.id;
+		this.entityReference = this.area.name + ":" + def.id;
 		this.exits = def.exits || [];
 		this.id = def.id;
 		this.title = def.title;
 		// create by-val copies of the doors config so the lock/unlock don't accidentally modify the original definition
 		this.doors = new Map(
-			Object.entries(JSON.parse(JSON.stringify(def.doors || {})))
+			Object.entries(JSON.parse(JSON.stringify(def.doors || {}))),
 		);
 		this.defaultDoors = def.doors || {};
 
@@ -154,10 +154,10 @@ export class Room extends GameEntity {
 		super.emit(eventName, ...args);
 
 		const proxiedEvents = [
-			'playerEnter',
-			'playerLeave',
-			'npcEnter',
-			'npcLeave',
+			"playerEnter",
+			"playerLeave",
+			"npcEnter",
+			"npcLeave",
 		];
 
 		if (proxiedEvents.includes(eventName)) {
@@ -229,8 +229,8 @@ export class Room extends GameEntity {
 		if (this.metadata.diagonalDirections !== undefined) {
 			return this.metadata.diagonalDirections;
 		}
-		if (Config.get('diagonalDirections') !== undefined) {
-			return Config.get('diagonalDirections');
+		if (Config.get("diagonalDirections") !== undefined) {
+			return Config.get("diagonalDirections");
 		} else return true;
 	}
 
@@ -245,7 +245,7 @@ export class Room extends GameEntity {
 			(exit: IExit) => {
 				exit.inferred = false;
 				return exit;
-			}
+			},
 		);
 
 		if (!this.area || !this.coordinates) {
@@ -253,21 +253,21 @@ export class Room extends GameEntity {
 		}
 
 		let adjacents = [
-			{ dir: 'west', coord: [-1, 0, 0] },
-			{ dir: 'east', coord: [1, 0, 0] },
-			{ dir: 'north', coord: [0, 1, 0] },
-			{ dir: 'south', coord: [0, -1, 0] },
-			{ dir: 'up', coord: [0, 0, 1] },
-			{ dir: 'down', coord: [0, 0, -1] },
+			{ dir: "west", coord: [-1, 0, 0] },
+			{ dir: "east", coord: [1, 0, 0] },
+			{ dir: "north", coord: [0, 1, 0] },
+			{ dir: "south", coord: [0, -1, 0] },
+			{ dir: "up", coord: [0, 0, 1] },
+			{ dir: "down", coord: [0, 0, -1] },
 		];
 
 		if (this.checkDiagonalDirections()) {
 			adjacents = [
 				...adjacents,
-				{ dir: 'northeast', coord: [1, 1, 0] },
-				{ dir: 'northwest', coord: [-1, 1, 0] },
-				{ dir: 'southeast', coord: [1, -1, 0] },
-				{ dir: 'southwest', coord: [-1, -1, 0] },
+				{ dir: "northeast", coord: [1, 1, 0] },
+				{ dir: "northwest", coord: [-1, 1, 0] },
+				{ dir: "southeast", coord: [1, -1, 0] },
+				{ dir: "southwest", coord: [-1, -1, 0] },
 			];
 		}
 
@@ -276,7 +276,7 @@ export class Room extends GameEntity {
 			const room = this.area.getRoomAtCoordinates(
 				this.coordinates.x + x,
 				this.coordinates.y + y,
-				this.coordinates.z + z
+				this.coordinates.z + z,
 			);
 
 			if (room && !exits.find((ex: IExit) => ex.direction === adj.dir)) {
@@ -304,7 +304,7 @@ export class Room extends GameEntity {
 		}
 
 		const roomExit = exits.find(
-			(ex: IExit) => ex.direction.indexOf(exitName) === 0
+			(ex: IExit) => ex.direction.indexOf(exitName) === 0,
 		);
 
 		return roomExit || false;
@@ -323,7 +323,7 @@ export class Room extends GameEntity {
 		}
 
 		const roomExit = exits.find(
-			(ex: IExit) => ex.roomId === nextRoom.entityReference
+			(ex: IExit) => ex.roomId === nextRoom.entityReference,
 		);
 
 		return roomExit || false;
@@ -419,11 +419,11 @@ export class Room extends GameEntity {
 	 * @param {string} entityRef
 	 * @return {Item}
 	 *
-	 * @fires Item#spawn
+	 * **Fires**: Item#spawn
 	 */
 	spawnItem(state: IGameState, entityRef: EntityReference) {
 		Logger.verbose(
-			`\tSPAWN: Adding item [${entityRef}] to room [${this.title}]`
+			`\tSPAWN: Adding item [${entityRef}] to room [${this.title}]`,
 		);
 		const newItem = state.ItemFactory.create(this.area, entityRef);
 		newItem.hydrate(state);
@@ -433,7 +433,7 @@ export class Room extends GameEntity {
 		/**
 		 * @event Item#spawn
 		 */
-		newItem.emit('spawn', { type: Room });
+		newItem.emit("spawn", { type: Room });
 		return newItem;
 	}
 
@@ -444,11 +444,11 @@ export class Room extends GameEntity {
 	 * @param {string} entityRef
 	 * @return {Npc}
 	 *
-	 * @fires Npc#spawn
+	 * **Fires**: Npc#spawn
 	 */
 	spawnNpc(state: IGameState, entityRef: EntityReference) {
 		Logger.verbose(
-			`\tSPAWN: Adding npc [${entityRef}] to room [${this.title}]`
+			`\tSPAWN: Adding npc [${entityRef}] to room [${this.title}]`,
 		);
 		const newNpc = state.MobFactory.create(this.area, entityRef);
 		newNpc.hydrate(state);
@@ -459,7 +459,7 @@ export class Room extends GameEntity {
 		/**
 		 * @event Npc#spawn
 		 */
-		newNpc.emit('spawn');
+		newNpc.emit("spawn");
 		return newNpc;
 	}
 
@@ -477,7 +477,7 @@ export class Room extends GameEntity {
 		 * contents. Use the `ready` event if you need default items to be there.
 		 * @event Room#spawn
 		 */
-		this.emit('spawn');
+		this.emit("spawn");
 
 		this.items = new Set();
 
@@ -486,7 +486,7 @@ export class Room extends GameEntity {
 		// If you would like to change that functionality this is the place
 
 		this.defaultItems.forEach((defaultItem) => {
-			if (typeof defaultItem === 'string') {
+			if (typeof defaultItem === "string") {
 				defaultItem = { id: defaultItem };
 			}
 
@@ -496,7 +496,7 @@ export class Room extends GameEntity {
 		// LOAD ROOMS'S DEFAULT NPCS (ARRAY)
 		if (Array.isArray(this.defaultNpcs)) {
 			this.defaultNpcs.forEach((defaultNpc: IRoomNpcDef | string) => {
-				if (typeof defaultNpc === 'string') {
+				if (typeof defaultNpc === "string") {
 					defaultNpc = { id: defaultNpc };
 				}
 
@@ -514,7 +514,7 @@ export class Room extends GameEntity {
 				)[defaultNpc];
 				if (npc === false) return;
 				try {
-					this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ''));
+					this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ""));
 				} catch (err) {
 					Logger.error(err);
 				}

@@ -1,4 +1,5 @@
-import { Attribute, AttributeName, ISerializedAttribute } from './Attribute';
+import { Attribute, AttributeName, ISerializedAttribute } from "./Attribute";
+import type { Character } from "./Character";
 
 /**
  * Container for a list of attributes for a {@link Character}
@@ -18,7 +19,7 @@ export class Attributes extends Map<AttributeName, Attribute> {
 	}
 
 	/**
-	 * @return {Iterator} see {@link Map#entries}
+	 * @return {Iterator} see {@link Map.entries}
 	 */
 	getAttributes() {
 		return this.entries();
@@ -28,7 +29,7 @@ export class Attributes extends Map<AttributeName, Attribute> {
 	 * Clear all deltas for all attributes in the list
 	 */
 	clearDeltas() {
-		for (const [_, attr] of this) {
+		for (const [, attr] of this) {
 			attr.setDelta(0);
 		}
 	}

@@ -1,3 +1,5 @@
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 import { IDataSource } from "./EntityLoader";
 
 export interface DataSourceConfig {
@@ -15,34 +17,38 @@ export class DataSourceRegistry extends Map<string, IDataSource> {
 	 * @param {string} rootPath project root
 	 * @param {object} config configuration to load
 	 */
-	load(requireFn: Function, rootPath: string, config: DataSourceConfig = {}) {
+	load(
+		requireFn: (module: string) => any,
+		rootPath: string,
+		config: DataSourceConfig = {},
+	) {
 		for (const [name, settings] of Object.entries(config)) {
-			if (!settings.hasOwnProperty('require')) {
+			if (!Object.prototype.hasOwnProperty.call(settings, "require")) {
 				throw new Error(`DataSource [${name}] does not specify a 'require'`);
 			}
 
-			if (typeof settings.require !== 'string') {
+			if (typeof settings.require !== "string") {
 				throw new TypeError(`DataSource [${name}] has an invalid 'require'`);
 			}
 
 			const sourceConfig = settings.config || {};
 
-			let loader = null;
+			let loader;
 
 			// relative path to require
-			if (settings.require[0] === '.') {
-				loader = require(rootPath + '/' + settings.require);
-			} else if (!settings.require.includes('.')) {
+			if (settings.require[0] === ".") {
+				loader = require(rootPath + "/" + settings.require);
+			} else if (!settings.require.includes(".")) {
 				loader = require(settings.require);
 			} else {
-				const [moduleName, exportName] = settings.require.split('.');
+				const [moduleName, exportName] = settings.require.split(".");
 				loader = requireFn(moduleName)[exportName];
 			}
 
 			const instance: IDataSource = new loader(sourceConfig, rootPath);
-			if (!('hasData' in instance)) {
+			if (!("hasData" in instance)) {
 				throw new Error(
-					`Data Source ${name} requires at minimum a 'hasData(config): boolean' method`
+					`Data Source ${name} requires at minimum a 'hasData(config): boolean' method`,
 				);
 			}
 			instance.name = name;

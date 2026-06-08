@@ -1,10 +1,10 @@
-import { EffectableEntity } from '.';
-import { Area } from './Area';
-import { BehaviorManager } from './BehaviorManager';
-import { EntityReference } from './EntityReference';
-import { Item } from './Item';
-import { Npc } from './Npc';
-import { Room } from './Room';
+import { EffectableEntity } from ".";
+import { Area } from "./Area";
+import { BehaviorManager } from "./BehaviorManager";
+import { EntityReference } from "./EntityReference";
+import { Item } from "./Item";
+import { Npc } from "./Npc";
+import { Room } from "./Room";
 
 export type EntityDefinitionBase = {
 	entityReference: string;
@@ -13,18 +13,17 @@ export type EntityDefinitionBase = {
 	area?: string;
 };
 
-type EntityConstructor<TEntity, TDef extends EntityDefinitionBase> = new (
-	area: Area,
-	def: TDef,
-	...args: any[]
-) => TEntity;
+export type EntityConstructor<
+	TEntity,
+	TDef extends EntityDefinitionBase,
+> = new (area: Area, def: TDef, ...args: any[]) => TEntity;
 
 /**
  * Stores definitions of entities to allow for easy creation/cloning
  */
 export abstract class EntityFactory<
 	TEntity extends EffectableEntity,
-	TDef extends EntityDefinitionBase
+	TDef extends EntityDefinitionBase,
 > {
 	entities: Map<EntityReference, TDef>;
 	scripts: BehaviorManager;
@@ -35,12 +34,12 @@ export abstract class EntityFactory<
 
 	/**
 	 * Create the key used by the entities and scripts maps
-	 * @param {string} areaName
+	 * @param {string} area
 	 * @param {number} id
 	 * @return {string}
 	 */
 	createEntityRef(area: string, id: string | number): string {
-		return area + ':' + id;
+		return area + ":" + id;
 	}
 
 	/**
@@ -70,7 +69,7 @@ export abstract class EntityFactory<
 	addScriptListener(
 		entityRef: EntityReference,
 		event: string,
-		listener: Function
+		listener: (...args: any[]) => void,
 	): void {
 		this.scripts.addListener(entityRef, event, listener);
 	}
@@ -88,12 +87,12 @@ export abstract class EntityFactory<
 	createByType(
 		area: Area,
 		entityRef: EntityReference,
-		Constructor: EntityConstructor<TEntity, TDef>
+		Constructor: EntityConstructor<TEntity, TDef>,
 	): TEntity {
 		const definition = this.getDefinition(entityRef);
 		if (!definition) {
 			throw new Error(
-				`[${Constructor.name}Factory] No Entity definition found for ${entityRef}`
+				`[${Constructor.name}Factory] No Entity definition found for ${entityRef}`,
 			);
 		}
 
@@ -104,10 +103,6 @@ export abstract class EntityFactory<
 		}
 
 		return entity;
-	}
-
-	create(...args: any[]): TEntity {
-		throw new Error('No type specified for Entity.create');
 	}
 
 	/**
@@ -123,7 +118,10 @@ export abstract class EntityFactory<
 			entity instanceof Item
 			// Area type handled in AreaFactory.clone()
 		) {
-			return this.create(entity.area, entity.entityReference);
+			return (this as any).create(
+				(entity as any).area,
+				(entity as any).entityReference,
+			);
 		}
 	}
 }

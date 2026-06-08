@@ -1,5 +1,5 @@
-import { Damage } from './Damage';
-import { PlayerOrNpc } from './GameEntity';
+import { Damage } from "./Damage";
+import { PlayerOrNpc } from "./GameEntity";
 
 /**
  * Heal is `Damage` that raises an attribute instead of lowering it
@@ -9,8 +9,8 @@ export class Heal extends Damage {
 	/**
 	 * Raise a given attribute
 	 * @param {Character} target
-	 * @fires Character#heal
-	 * @fires Character#healed
+	 * **Fires**: Character#heal
+	 * **Fires**: Character#healed
 	 */
 	commit(target: PlayerOrNpc) {
 		const finalAmount = this.evaluate(target);
@@ -23,13 +23,13 @@ export class Heal extends Damage {
 			 * @param {Character} target
 			 * @param {number} finalAmount
 			 */
-			this.attacker.emit('heal', this, target, finalAmount);
+			this.attacker.emit("heal", this, target, finalAmount);
 		}
 		/**
 		 * @event Character#healed
 		 * @param {Heal} heal
 		 * @param {number} finalAmount
 		 */
-		target.emit('healed', this, finalAmount);
+		target.emit("healed", this, finalAmount);
 	}
 }

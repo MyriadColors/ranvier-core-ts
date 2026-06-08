@@ -4,4 +4,4 @@ export const PlayerRoles = {
 	PLAYER: 0,
 } as const;
 
-export type PlayerRoles = typeof PlayerRoles[keyof typeof PlayerRoles];
+export type PlayerRoles = (typeof PlayerRoles)[keyof typeof PlayerRoles];

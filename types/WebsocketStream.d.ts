@@ -1,4 +1,4 @@
-import { TransportStream } from '../src/TransportStream';
+import { TransportStream } from "../src/TransportStream";
 
 /**
  * Essentially we want to look at the methods of WebSocket and match them to the appropriate methods on TransportStream

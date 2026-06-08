@@ -1,4 +1,4 @@
-import { ChannelAudience } from './ChannelAudience';
+import { ChannelAudience } from "./ChannelAudience";
 
 export interface IRoleAudienceOptions {
 	minRole: number;
@@ -6,16 +6,16 @@ export interface IRoleAudienceOptions {
 export class RoleAudience extends ChannelAudience {
 	minRole: number;
 	constructor(options: IRoleAudienceOptions) {
-		super(options);
-		if (!options.hasOwnProperty('minRole')) {
-			throw new Error('No role given for role audience');
+		super();
+		if (!Object.prototype.hasOwnProperty.call(options, "minRole")) {
+			throw new Error("No role given for role audience");
 		}
 		this.minRole = options.minRole;
 	}
 
 	getBroadcastTargets() {
 		return (this.state?.PlayerManager || []).filter(
-			(player) => player.role >= this.minRole && player !== this.sender
+			(player) => player.role >= this.minRole && player !== this.sender,
 		);
 	}
 }

@@ -1,9 +1,8 @@
-import { Broadcastable } from '.';
-import { ChannelAudience } from './ChannelAudience';
+import { Broadcastable } from ".";
+import { ChannelAudience } from "./ChannelAudience";
 
 /**
  * Audience class representing other players in the same group as the sender
- * @memberof ChannelAudience
  * @extends ChannelAudience
  */
 export class PartyAudience extends ChannelAudience {

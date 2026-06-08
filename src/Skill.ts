@@ -1,28 +1,28 @@
-import { Broadcast } from './Broadcast';
-import { Damage } from './Damage';
-import { Effect, IEffectDef } from './Effect';
-import { AnyCharacter, PlayerOrNpc } from './GameEntity';
-import { IGameState } from './GameState';
-import { Logger } from './Logger';
+import { Broadcast } from "./Broadcast";
+import { Damage } from "./Damage";
+import { Effect, IEffectDef } from "./Effect";
+import { AnyCharacter, PlayerOrNpc } from "./GameEntity";
+import { IGameState } from "./GameState";
+import { Logger } from "./Logger";
 import {
 	CooldownError,
 	NotEnoughResourcesError,
 	PassiveError,
-} from './SkillErrors';
-import { SkillFlag } from './SkillFlag';
-import { SkillType } from './SkillType';
+} from "./SkillErrors";
+import { SkillFlag } from "./SkillFlag";
+import { SkillType } from "./SkillType";
 
 export interface ISkillOptions {
-	configureEffect?: Function;
+	configureEffect?: (effect: Effect) => Effect;
 	cooldown?: number | ISkillCooldown;
 	effect?: string;
 	flags?: any[];
-	info?: (player: PlayerOrNpc) => void;
+	info?: (player: AnyCharacter) => string;
 	initiatesCombat?: boolean;
 	name: string;
 	requiresTarget?: boolean;
 	resource?: any;
-	run: (state: IGameState) => any;
+	run: (...args: any[]) => any;
 	targetSelf?: boolean;
 	type: SkillType;
 	options?: any;
@@ -49,19 +49,19 @@ export interface ISkillResource {
  * @property {SkillType}        type
  */
 export class Skill {
-	configureEffect: Function;
+	configureEffect: (effect: Effect) => Effect;
 	cooldownGroup: string | null;
 	cooldownLength: ISkillCooldown | number | null;
 	effect: string | null;
 	flags: any[];
 	id: string;
-	info: Function;
+	info: (player: AnyCharacter) => string;
 	initiatesCombat: boolean;
 	name: string;
 	options: Record<string, unknown>;
 	requiresTarget: boolean;
 	resource: ISkillResource | ISkillResource[];
-	run: Function;
+	run: (...args: any[]) => any;
 	state: IGameState;
 	targetSelf: boolean;
 	type: SkillType;
@@ -72,16 +72,16 @@ export class Skill {
 	 */
 	constructor(id: string, config: ISkillOptions, state: IGameState) {
 		const {
-			configureEffect = (_: any) => _,
+			configureEffect = (effect: Effect) => effect,
 			cooldown = null,
 			effect = null,
 			flags = [],
-			info = (_: any) => {},
+			info = () => "",
 			initiatesCombat = false,
 			name,
 			requiresTarget = true,
 			resource = null /* format [{ attribute: 'someattribute', cost: 10}] */,
-			run = (_: any) => {},
+			run = () => {},
 			targetSelf = false,
 			type = SkillType.SKILL,
 			options = {},
@@ -90,7 +90,7 @@ export class Skill {
 		this.configureEffect = configureEffect;
 
 		this.cooldownGroup = null;
-		if (cooldown && typeof cooldown === 'object') {
+		if (cooldown && typeof cooldown === "object") {
 			this.cooldownGroup = cooldown.group;
 			this.cooldownLength = cooldown.length;
 		} else {
@@ -182,7 +182,7 @@ export class Skill {
 		}
 
 		if (!this.effect) {
-			throw new Error('Passive skill has no attached effect');
+			throw new Error("Passive skill has no attached effect");
 		}
 
 		let effect = this.state.EffectFactory.create(this.effect, {
@@ -201,7 +201,7 @@ export class Skill {
 	onCooldown(character: PlayerOrNpc) {
 		for (const effect of character.effects.entries()) {
 			if (
-				effect.id === 'cooldown' &&
+				effect.id === "cooldown" &&
 				effect.state.cooldownId === this.getCooldownId()
 			) {
 				return effect;
@@ -213,7 +213,6 @@ export class Skill {
 
 	/**
 	 * Put this skill on cooldown
-	 * @param {number} duration Cooldown duration
 	 * @param {Character} character
 	 */
 	cooldown(character: PlayerOrNpc) {
@@ -226,8 +225,8 @@ export class Skill {
 
 	getCooldownId() {
 		return this.cooldownGroup
-			? 'skillgroup:' + this.cooldownGroup
-			: 'skill:' + this.id;
+			? "skillgroup:" + this.cooldownGroup
+			: "skill:" + this.id;
 	}
 
 	/**
@@ -237,26 +236,26 @@ export class Skill {
 	 * @return {Effect}
 	 */
 	createCooldownEffect() {
-		if (!this.state.EffectFactory.has('cooldown')) {
+		if (!this.state.EffectFactory.has("cooldown")) {
 			this.state.EffectFactory.add(
-				'cooldown',
+				"cooldown",
 				this.getDefaultCooldownConfig(),
-				this.state
+				this.state,
 			);
 		}
 
 		const duration =
-			typeof this.cooldownLength === 'number'
+			typeof this.cooldownLength === "number"
 				? this.cooldownLength
 				: this.cooldownLength?.length || 0;
 
 		const effect = this.state.EffectFactory.create(
-			'cooldown',
+			"cooldown",
 			{
-				name: 'Cooldown: ' + this.name,
+				name: "Cooldown: " + this.name,
 				duration: duration * 1000,
 			},
-			{ cooldownId: this.getCooldownId() }
+			{ cooldownId: this.getCooldownId() },
 		);
 		effect.skill = this;
 
@@ -266,27 +265,27 @@ export class Skill {
 	getDefaultCooldownConfig(): IEffectDef {
 		return {
 			config: {
-				name: 'Cooldown',
-				description: 'Cannot use ability while on cooldown.',
+				name: "Cooldown",
+				description: "Cannot use ability while on cooldown.",
 				unique: false,
-				type: 'cooldown',
+				type: "cooldown",
 			},
 			state: {
 				cooldownId: null,
 			},
-			listeners: (state: IGameState) => ({
+			listeners: () => ({
 				effectDeactivated: function (this: Effect) {
 					if (!this.target) {
-						Logger.error('Cooldown effect has no target.');
+						Logger.error("Cooldown effect has no target.");
 						return;
 					}
 					const skillName =
-						typeof this.skill === 'string'
+						typeof this.skill === "string"
 							? this.skill
-							: this.skill?.name || 'unnamed skill';
+							: this.skill?.name || "unnamed skill";
 					Broadcast.sayAt(
 						this.target as PlayerOrNpc,
-						`You may now use <bold>${skillName}</bold> again.`
+						`You may now use <bold>${skillName}</bold> again.`,
 					);
 				},
 			}),
@@ -300,7 +299,7 @@ export class Skill {
 	hasEnoughResources(character: PlayerOrNpc) {
 		if (Array.isArray(this.resource)) {
 			return this.resource.every((resource) =>
-				this.hasEnoughResource(character, resource)
+				this.hasEnoughResource(character, resource),
 			);
 		}
 		return this.hasEnoughResource(character, this.resource);

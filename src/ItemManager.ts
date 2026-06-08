@@ -1,6 +1,6 @@
-import { Item } from './Item';
-import { ItemType } from './ItemType';
-import { Room } from './Room';
+import { Item } from "./Item";
+import { ItemType } from "./ItemType";
+import { Room } from "./Room";
 
 /**
  * Keep track of all items in game
@@ -34,14 +34,14 @@ export class ItemManager {
 	}
 
 	/**
-	 * @fires Item#updateTick
+	 * **Fires**: Item#updateTick
 	 */
 	tickAll() {
 		for (const item of this.items) {
 			/**
 			 * @event Item#updateTick
 			 */
-			item.emit('updateTick');
+			item.emit("updateTick");
 		}
 	}
 }

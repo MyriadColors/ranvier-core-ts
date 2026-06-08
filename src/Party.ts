@@ -1,4 +1,4 @@
-import { PlayerOrNpc } from './GameEntity';
+import { PlayerOrNpc } from "./GameEntity";
 
 /**
  * Representation of an adventuring party

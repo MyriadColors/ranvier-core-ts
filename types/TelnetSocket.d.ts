@@ -1,5 +1,5 @@
-import * as net from 'net';
-import { EventEmitter } from 'events';
+import * as net from "net";
+import { EventEmitter } from "events";
 
 export enum Seq {
 	IAC = 255,

@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const yaml = require('js-yaml');
+import fs from "fs";
+import path from "path";
+import yaml from "js-yaml";
 
 let dataPath: string | null = null;
 
@@ -24,14 +24,14 @@ export class Data {
 
 		const contents = fs
 			.readFileSync(fs.realpathSync(filepath))
-			.toString('utf8');
+			.toString("utf8");
 		const parsers = {
-			'.yml': yaml.load,
-			'.yaml': yaml.load,
-			'.json': JSON.parse,
+			".yml": yaml.load,
+			".yaml": yaml.load,
+			".json": JSON.parse,
 		};
 
-		const ext: keyof typeof parsers = path.extname(filepath);
+		const ext = path.extname(filepath) as keyof typeof parsers;
 		if (!(ext in parsers)) {
 			throw new Error(`File [${filepath}] does not have a valid parser!`);
 		}
@@ -48,28 +48,28 @@ export class Data {
 	static saveFile(
 		filepath: string,
 		data: any,
-		callback?: Function | undefined
+		callback?: () => void | undefined,
 	) {
 		if (!fs.existsSync(filepath)) {
 			throw new Error(`File [${filepath}] does not exist!`);
 		}
 
 		const serializers = {
-			'.yml': yaml.safeDump,
-			'.yaml': yaml.safeDump,
-			'.json': function (data: any) {
+			".yml": yaml.dump,
+			".yaml": yaml.dump,
+			".json": function (data: any) {
 				//Make it prettttty
 				return JSON.stringify(data, null, 2);
 			},
 		};
 
-		const ext: keyof typeof serializers = path.extname(filepath);
+		const ext = path.extname(filepath) as keyof typeof serializers;
 		if (!(ext in serializers)) {
 			throw new Error(`File [${filepath}] does not have a valid serializer!`);
 		}
 
 		const dataToWrite = serializers[ext](data);
-		fs.writeFileSync(filepath, dataToWrite, 'utf8');
+		fs.writeFileSync(filepath, dataToWrite, "utf8");
 
 		if (callback) {
 			callback();
@@ -93,11 +93,11 @@ export class Data {
 	 * @param {*} data
 	 * @param {function} callback
 	 */
-	static save(type: string, id: string, data: any, callback?: Function) {
+	static save(type: string, id: string, data: any, callback?: () => void) {
 		fs.writeFileSync(
 			this.getDataFilePath(type, id),
 			JSON.stringify(data, null, 2),
-			'utf8'
+			"utf8",
 		);
 		if (callback) {
 			callback();
@@ -122,15 +122,15 @@ export class Data {
 	 */
 	static getDataFilePath(type: string, id: string) {
 		switch (type) {
-			case 'player': {
+			case "player": {
 				return dataPath + `player/${id}.json`;
 			}
-			case 'account': {
+			case "account": {
 				return dataPath + `account/${id}.json`;
 			}
 			default:
 				throw new Error(
-					`Data getDataFilePath cannot find the data path for type [${type}]`
+					`Data getDataFilePath cannot find the data path for type [${type}]`,
 				);
 		}
 	}
@@ -151,7 +151,7 @@ export class Data {
 	 * @return string
 	 */
 	static loadMotd() {
-		const motd = fs.readFileSync(dataPath + 'motd').toString('utf8');
+		const motd = fs.readFileSync(dataPath + "motd").toString("utf8");
 		return motd;
 	}
 }

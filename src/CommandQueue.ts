@@ -1,7 +1,4 @@
-import { Command } from './Command';
-
 /** @typedef {{ execute: function (), label: string, lag: number= }} */
-var CommandExecutable;
 export interface ICommandExecutable {
 	execute(): void;
 	label: string;
@@ -38,7 +35,7 @@ export class CommandQueue {
 	 * @returns {number}
 	 */
 	enqueue(executable: ICommandExecutable, lag: number) {
-		let newIndex = this.commands.push(Object.assign(executable, { lag })) - 1;
+		const newIndex = this.commands.push(Object.assign(executable, { lag })) - 1;
 		return newIndex;
 	}
 
@@ -126,7 +123,7 @@ export class CommandQueue {
 	 */
 	getMsTilRun(commandIndex: number) {
 		if (!this.commands[commandIndex]) {
-			throw new RangeError('Invalid command index');
+			throw new RangeError("Invalid command index");
 		}
 
 		let lagTotal = this.msTilNextRun;
@@ -137,6 +134,6 @@ export class CommandQueue {
 
 			lagTotal += this.commands[i].lag || 0;
 		}
-		throw new RangeError('Invalid command index');
+		throw new RangeError("Invalid command index");
 	}
 }

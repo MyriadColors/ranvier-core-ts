@@ -1,9 +1,8 @@
-import { EventEmitter } from 'events';
-import { AccountManager } from './AccountManager';
-import { Data } from './Data';
-import { Metadata, Metadatable } from './Metadatable';
+import { EventEmitter } from "events";
+import { AccountManager } from "./AccountManager";
+import { Metadata, Metadatable } from "./Metadatable";
 
-const bcrypt = require('bcryptjs');
+import bcrypt from "bcryptjs";
 
 export interface IAccountConfig {
 	/** @property {string} username */
@@ -118,7 +117,7 @@ export class Account extends Metadatable(EventEmitter) {
 	}
 
 	/**
-	 * @param {string} password Unhashed password. Is hashed inside this function
+	 * @param {string} pass Unhashed password. Is hashed inside this function
 	 */
 	setPassword(pass: string) {
 		this.password = this._hashPassword(pass);

@@ -1,13 +1,13 @@
-import { AreaFloor } from './AreaFloor';
-import { ISerializedEffect } from './Effect';
-import { SerializedAttributes } from './EffectableEntity';
-import { EntityDefinitionBase } from './EntityFactory';
-import { GameEntity } from './GameEntity';
-import { IGameState } from './GameState';
-import { Metadata } from './Metadatable';
-import { Npc } from './Npc';
-import { Player } from './Player';
-import { Room } from './Room';
+import { AreaFloor } from "./AreaFloor";
+import { ISerializedEffect } from "./Effect";
+import { SerializedAttributes } from "./EffectableEntity";
+import { EntityDefinitionBase } from "./EntityFactory";
+import { GameEntity } from "./GameEntity";
+import { IGameState } from "./GameState";
+import { Metadata } from "./Metadatable";
+import { Npc } from "./Npc";
+import { Player } from "./Player";
+import { Room } from "./Room";
 
 export interface IAreaDef extends EntityDefinitionBase {
 	bundle: string;
@@ -41,7 +41,7 @@ export interface IAreaManifest {
  * @property {Set<Npc>} npcs Active NPCs that originate from this area. Note: this is NPCs that
  *   _originate_ from this area. An NPC may not actually be in this area at any given moment.
  * @property {Object} info Area configuration
- * @property {Number} lastRespawnTick milliseconds since last respawn tick. See {@link Area#update}
+ * @property {Number} lastRespawnTick milliseconds since last respawn tick. See {@link Area.update}
  *
  * @extends GameEntity
  */
@@ -75,8 +75,8 @@ export class Area extends GameEntity {
 		this.script = manifest.script;
 		this.behaviors = new Map(Object.entries(manifest.behaviors || {}));
 
-		this.on('updateTick', (state: IGameState) => {
-			this.update(state);
+		this.on("updateTick", () => {
+			this.update();
 		});
 	}
 
@@ -110,7 +110,7 @@ export class Area extends GameEntity {
 
 	/**
 	 * @param {Room} room
-	 * @fires Area#roomAdded
+	 * **Fires**: Area#roomAdded
 	 */
 	addRoom(room: Room) {
 		this.rooms.set(room.id, room);
@@ -123,12 +123,12 @@ export class Area extends GameEntity {
 		 * @event Area#roomAdded
 		 * @param {Room} room
 		 */
-		this.emit('roomAdded', room);
+		this.emit("roomAdded", room);
 	}
 
 	/**
 	 * @param {Room} room
-	 * @fires Area#roomRemoved
+	 * **Fires**: Area#roomRemoved
 	 */
 	removeRoom(room: Room) {
 		this.removeRoomFromMap(room);
@@ -137,7 +137,7 @@ export class Area extends GameEntity {
 		 * @event Area#roomRemoved
 		 * @param {Room} room
 		 */
-		this.emit('roomRemoved', room);
+		this.emit("roomRemoved", room);
 	}
 
 	/**
@@ -146,7 +146,7 @@ export class Area extends GameEntity {
 	 */
 	addRoomToMap(room: Room) {
 		if (!room.coordinates) {
-			throw new Error('Room does not have coordinates');
+			throw new Error("Room does not have coordinates");
 		}
 
 		const { x, y, z } = room.coordinates;
@@ -156,7 +156,9 @@ export class Area extends GameEntity {
 		}
 
 		const floor = this.map.get(z);
-		floor && floor.addRoom(x, y, room);
+		if (floor) {
+			floor.addRoom(x, y, room);
+		}
 	}
 
 	/**
@@ -166,7 +168,7 @@ export class Area extends GameEntity {
 	 */
 	removeRoomFromMap(room: Room) {
 		if (!room.coordinates) {
-			throw new Error('Room does not have coordinates');
+			throw new Error("Room does not have coordinates");
 		}
 
 		const { x, y, z } = room.coordinates;
@@ -215,17 +217,16 @@ export class Area extends GameEntity {
 	 * `setInterval` call to `GameState.AreaManager.tickAll` in the `ranvier` executable. It, in turn,
 	 * will fire the `updateTick` event on all its rooms and npcs
 	 *
-	 * @param {GameState} state
-	 * @fires Room#updateTick
-	 * @fires Npc#updateTick
+	 * **Fires**: Room#updateTick
+	 * **Fires**: Npc#updateTick
 	 */
-	update(state: IGameState) {
-		for (const [id, room] of this.rooms) {
+	update() {
+		for (const [, room] of this.rooms) {
 			/**
 			 * @see Area#update
 			 * @event Room#updateTick
 			 */
-			room.emit('updateTick');
+			room.emit("updateTick");
 		}
 
 		for (const npc of this.npcs) {
@@ -233,7 +234,7 @@ export class Area extends GameEntity {
 			 * @see Area#update
 			 * @event Npc#updateTick
 			 */
-			npc.emit('updateTick');
+			npc.emit("updateTick");
 		}
 	}
 
@@ -250,7 +251,7 @@ export class Area extends GameEntity {
 			 * Fires after the room is hydrated and added to its area
 			 * @event Room#ready
 			 */
-			room.emit('ready');
+			room.emit("ready");
 		}
 	}
 
@@ -262,7 +263,7 @@ export class Area extends GameEntity {
 	getBroadcastTargets() {
 		const roomTargets = [...this.rooms].reduce(
 			(acc, [, room]) => acc.concat(room.getBroadcastTargets()),
-			[] as (Room | Player | Npc)[]
+			[] as (Room | Player | Npc)[],
 		);
 		return [this, ...roomTargets];
 	}

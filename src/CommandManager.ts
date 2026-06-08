@@ -1,4 +1,4 @@
-import { Command } from './Command';
+import { Command } from "./Command";
 
 /**
  * Contains all active in game commands
@@ -12,7 +12,7 @@ export class CommandManager {
 
 	/**
 	 * Get command by name
-	 * @param {string}
+	 * @param {string} command
 	 * @return {Command}
 	 */
 	get(command: string) {
@@ -21,19 +21,19 @@ export class CommandManager {
 
 	/**
 	 * Add the command and set up aliases
-	 * @param {Command}
+	 * @param {Command} command
 	 */
 	add(command: Command) {
 		this.commands.set(command.name, command);
 		if (command.aliases) {
 			command.aliases.forEach((alias: string) =>
-				this.commands.set(alias, command)
+				this.commands.set(alias, command),
 			);
 		}
 	}
 
 	/**
-	 * @param {Command}
+	 * @param {Command} command
 	 */
 	remove(command: Command) {
 		this.commands.delete(command.name);

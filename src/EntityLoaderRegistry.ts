@@ -1,17 +1,18 @@
-import { DataSourceRegistry } from './DataSourceRegistry';
-import { EntityLoader, IEntityLoaderConfig } from './EntityLoader';
+import { DataSourceRegistry } from "./DataSourceRegistry";
+import { EntityLoader, IEntityLoaderConfig } from "./EntityLoader";
 
 export const EntityLoaderKeys = {
-	ACCOUNT: 'accounts',
-	AREAS: 'areas',
-	HELP: 'help',
-	ITEMS: 'items',
-	NPCS: 'npcs',
-	PLAYERS: 'players',
-	QUESTS: 'quests',
-	ROOMS: 'rooms',
+	ACCOUNT: "accounts",
+	AREAS: "areas",
+	HELP: "help",
+	ITEMS: "items",
+	NPCS: "npcs",
+	PLAYERS: "players",
+	QUESTS: "quests",
+	ROOMS: "rooms",
 } as const;
-export type EntityLoaderKeys = typeof EntityLoaderKeys[keyof typeof EntityLoaderKeys];
+export type EntityLoaderKeys =
+	(typeof EntityLoaderKeys)[keyof typeof EntityLoaderKeys];
 
 export interface EntityLoaderConfig {
 	source: string;
@@ -29,7 +30,7 @@ export class EntityLoaderRegistry extends Map<EntityLoaderKeys, EntityLoader> {
 		const entityLoader = super.get(key);
 		if (!entityLoader) {
 			throw new Error(
-				`EntityLoaderRegistry did not find the entityloader with key of [${key}]`
+				`EntityLoaderRegistry did not find the entityloader with key of [${key}]`,
 			);
 		}
 		return entityLoader;
@@ -37,11 +38,11 @@ export class EntityLoaderRegistry extends Map<EntityLoaderKeys, EntityLoader> {
 
 	load(sourceRegistry: DataSourceRegistry, config: EntityLoaderJsonFile) {
 		for (const [name, settings] of Object.entries(config)) {
-			if (!settings.hasOwnProperty('source')) {
+			if (!Object.prototype.hasOwnProperty.call(settings, "source")) {
 				throw new Error(`EntityLoader [${name}] does not specify a 'source'`);
 			}
 
-			if (typeof settings.source !== 'string') {
+			if (typeof settings.source !== "string") {
 				throw new TypeError(`EntityLoader [${name}] has an invalid 'source'`);
 			}
 
@@ -55,7 +56,7 @@ export class EntityLoaderRegistry extends Map<EntityLoaderKeys, EntityLoader> {
 
 			if (!source) {
 				throw new Error(
-					`Invalid source [${settings.source}] for entity [${name}]`
+					`Invalid source [${settings.source}] for entity [${name}]`,
 				);
 			}
 
@@ -66,7 +67,7 @@ export class EntityLoaderRegistry extends Map<EntityLoaderKeys, EntityLoader> {
 			}
 			this.set(
 				name as EntityLoaderKeys,
-				new EntityLoader(source, sourceConfig)
+				new EntityLoader(source, sourceConfig),
 			);
 		}
 	}

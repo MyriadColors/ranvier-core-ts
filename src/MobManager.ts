@@ -1,5 +1,5 @@
-import { Item } from './Item';
-import { Npc } from './Npc';
+import { Item } from "./Item";
+import { Npc } from "./Npc";
 
 /**
  * Keeps track of all the individual mobs in the game
@@ -37,7 +37,7 @@ export class MobManager {
 
 		if (mob.equipment && mob.equipment.size) {
 			(mob.equipment as Map<string, Item>).forEach((item, slot) =>
-				mob.unequip(slot)
+				mob.unequip(slot),
 			);
 		}
 

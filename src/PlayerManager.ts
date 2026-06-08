@@ -1,13 +1,13 @@
-import { EventEmitter } from 'events';
-import { Account } from './Account';
-import { Data } from './Data';
-import { EffectableEntity } from './EffectableEntity';
-import { EntityLoader } from './EntityLoader';
-import { EventManager } from './EventManager';
-import { IGameState } from './GameState';
-import { Item } from './Item';
-import { Logger } from './Logger';
-import { Player } from './Player';
+import { EventEmitter } from "events";
+import { Account } from "./Account";
+import { Data } from "./Data";
+import { EffectableEntity } from "./EffectableEntity";
+import { EntityLoader } from "./EntityLoader";
+import { EventManager } from "./EventManager";
+import { IGameState } from "./GameState";
+import { Item } from "./Item";
+import { Logger } from "./Logger";
+import { Player } from "./Player";
 
 /**
  * Keeps track of all active players in game
@@ -15,8 +15,8 @@ import { Player } from './Player';
  * @property {Map} players
  * @property {EventManager} events Player events
  * @property {EntityLoader} loader
- * @listens PlayerManager#save
- * @listens PlayerManager#updateTick
+ * **Listens**: PlayerManager#save
+ * **Listens**: PlayerManager#updateTick
  */
 export class PlayerManager extends EventEmitter {
 	players: Map<string, Player>;
@@ -28,12 +28,12 @@ export class PlayerManager extends EventEmitter {
 		this.players = new Map();
 		this.events = new EventManager();
 		this.loader = null;
-		this.on('updateTick', this.tickAll);
+		this.on("updateTick", this.tickAll);
 	}
 
 	/**
 	 * Set the entity loader from which players are loaded
-	 * @param {EntityLoader}
+	 * @param {EntityLoader} loader
 	 */
 	setLoader(loader: EntityLoader) {
 		this.loader = loader;
@@ -71,9 +71,7 @@ export class PlayerManager extends EventEmitter {
 		player.room?.removePlayer(player);
 
 		if (player.equipment instanceof Map && player.equipment.size) {
-			player.equipment.forEach((item: Item, slot: string) =>
-				item.__manager?.remove(item)
-			);
+			player.equipment.forEach((item: Item) => item.__manager?.remove(item));
 		}
 
 		player.inventory.forEach((item) => item.__manager?.remove(item));
@@ -90,7 +88,7 @@ export class PlayerManager extends EventEmitter {
 	}
 
 	/**
-	 * @param {string}   behaviorName
+	 * @param {string}   event
 	 * @param {Function} listener
 	 */
 	addListener(event: string, listener: (...args: any[]) => void): this {
@@ -103,7 +101,7 @@ export class PlayerManager extends EventEmitter {
 	 * @return {array},
 	 */
 	filter(
-		predicate: (player: Player, index: number, array: Player[]) => boolean
+		predicate: (player: Player, index: number, array: Player[]) => boolean,
 	) {
 		return this.getPlayersAsArray().filter(predicate);
 	}
@@ -120,14 +118,14 @@ export class PlayerManager extends EventEmitter {
 		state: IGameState,
 		account: Account,
 		username: string,
-		force?: boolean
+		force?: boolean,
 	) {
 		if (this.players.has(username) && !force) {
 			return this.getPlayer(username);
 		}
 
 		if (!this.loader) {
-			throw new Error('No entity loader configured for players');
+			throw new Error("No entity loader configured for players");
 		}
 
 		const data = await this.loader.fetch(username);
@@ -156,46 +154,46 @@ export class PlayerManager extends EventEmitter {
 	 * @return {boolean}
 	 */
 	exists(name: string) {
-		return Data.exists('player', name);
+		return Data.exists("player", name);
 	}
 
 	/**
 	 * Save a player
-	 * @fires Player#save
+	 * **Fires**: Player#save
 	 */
 	async save(player: Player) {
 		if (!this.loader) {
-			throw new Error('No entity loader configured for players');
+			throw new Error("No entity loader configured for players");
 		}
-		Logger.warn('Serializing...');
+		Logger.warn("Serializing...");
 		const serialized = player.serialize();
 		await this.loader.update(player.name, serialized);
 
 		/**
 		 * @event Player#saved
 		 */
-		player.emit('saved');
+		player.emit("saved");
 	}
 
 	/**
 	 * Save all players
-	 * @fires Player#save
+	 * **Fires**: Player#save
 	 */
 	async saveAll() {
-		for (const [name, player] of this.players.entries()) {
+		for (const [, player] of this.players.entries()) {
 			await this.save(player);
 		}
 	}
 
 	/**
-	 * @fires Player#updateTick
+	 * **Fires**: Player#updateTick
 	 */
 	tickAll() {
-		for (const [name, player] of this.players.entries()) {
+		for (const [, player] of this.players.entries()) {
 			/**
 			 * @event Player#updateTick
 			 */
-			player.emit('updateTick');
+			player.emit("updateTick");
 		}
 	}
 

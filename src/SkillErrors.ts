@@ -1,4 +1,4 @@
-import { Effect } from './Effect';
+import { Effect } from "./Effect";
 
 /**
  * Error used when trying to execute a skill and the player doesn't have enough resources

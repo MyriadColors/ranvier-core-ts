@@ -1,4 +1,4 @@
-import { Room } from './Room';
+import { Room } from "./Room";
 
 /**
  * IF you absolutely need to iterate over a floor in a tight (nested) loop you
@@ -46,12 +46,12 @@ export class AreaFloor {
 
 	addRoom(x: number, y: number, room: Room) {
 		if (!room) {
-			throw new Error('Invalid room given to AreaFloor.addRoom');
+			throw new Error("Invalid room given to AreaFloor.addRoom");
 		}
 
 		if (this.getRoom(x, y)) {
 			throw new Error(
-				`AreaFloor.addRoom: trying to add room at filled coordinates: ${x}, ${y}`
+				`AreaFloor.addRoom: trying to add room at filled coordinates: ${x}, ${y}`,
 			);
 		}
 
@@ -84,7 +84,7 @@ export class AreaFloor {
 	removeRoom(x: number, y: number) {
 		if (!this.map[x] || !this.map[x][y]) {
 			throw new Error(
-				'AreaFloor.removeRoom: trying to remove non-existent room'
+				"AreaFloor.removeRoom: trying to remove non-existent room",
 			);
 		}
 

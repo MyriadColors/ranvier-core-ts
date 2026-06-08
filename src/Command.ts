@@ -1,17 +1,23 @@
-import { CommandType } from './CommandType';
-import { Npc } from './Npc';
-import { Player } from './Player';
-import { PlayerRoles } from './PlayerRoles';
+import { CommandType } from "./CommandType";
+import { Npc } from "./Npc";
+import { Player } from "./Player";
+import { PlayerRoles } from "./PlayerRoles";
+
+export type CommandFunction = (
+	args: string,
+	player: Npc | Player,
+	arg0: string,
+) => any;
 
 export interface ICommandDef {
 	name: string;
-	func: Function;
+	func: CommandFunction;
 	type?: CommandType;
 	aliases?: string[];
 	usage?: string;
 	requiredRole?: PlayerRoles;
 	metadata?: Record<string, any>;
-	command: Function;
+	command: any;
 }
 
 /**
@@ -29,7 +35,7 @@ export class Command {
 	bundle: string;
 	type: CommandType;
 	name: string;
-	func: Function;
+	func: CommandFunction;
 	aliases?: string[];
 	usage: string;
 	requiredRole: PlayerRoles;
@@ -40,11 +46,11 @@ export class Command {
 	 * @param {string} bundle Bundle the command came from
 	 * @param {string} name   Name of the command
 	 * @param {object} def
-	 * @param {CommandType} def.type=CommandType.COMMAND
+	 * @param {CommandType} def.type
 	 * @param {function} def.command
 	 * @param {Array<string>} def.aliases
-	 * @param {string} def.usage=this.name
-	 * @param {PlayerRoles} requiredRole=PlayerRoles.PLAYER
+	 * @param {string} def.usage
+	 * @param {PlayerRoles} def.requiredRole
 	 * @param {string} file File the command comes from
 	 */
 	constructor(bundle: string, name: string, def: ICommandDef, file: string) {
@@ -65,9 +71,7 @@ export class Command {
 	 * @param {string} arg0   The actual command the user typed, useful when checking which alias was used for a command
 	 * @return {*}
 	 */
-	execute(
-		args: string, player: Npc | Player, arg0: string = this.name
-	) {
+	execute(args: string, player: Npc | Player, arg0: string = this.name) {
 		return this.func(args, player, arg0);
 	}
 }

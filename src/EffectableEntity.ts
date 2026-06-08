@@ -1,12 +1,12 @@
-import { EventEmitter } from 'events';
-import { Attribute, ISerializedAttribute } from './Attribute';
-import { Attributes } from './Attributes';
-import { Damage } from './Damage';
-import { Effect, ISerializedEffect } from './Effect';
-import { EffectList } from './EffectList';
-import { IGameState } from './GameState';
-import { Logger } from './Logger';
-import { AnyCharacter } from './GameEntity';
+import { EventEmitter } from "events";
+import { Attribute, ISerializedAttribute } from "./Attribute";
+import { Attributes } from "./Attributes";
+import { Damage } from "./Damage";
+import { Effect, ISerializedEffect } from "./Effect";
+import { EffectList } from "./EffectList";
+import { IGameState } from "./GameState";
+import { Logger } from "./Logger";
+import { AnyCharacter } from "./GameEntity";
 
 export interface ISerializedEffectableEntity {
 	attributes: SerializedAttributes;
@@ -17,7 +17,6 @@ export type SerializedAttributes = Record<string, ISerializedAttribute>;
 
 /**
  * @ignore
- * @exports MetadatableFn
  * @param {*} parentClass
  * @return {module:MetadatableFn~Metadatable}
  * Base class for game entities that can have effects/attributes
@@ -60,7 +59,7 @@ export class EffectableEntity extends EventEmitter {
 
 	/**
 	 * Get current maximum value of attribute (as modified by effects.)
-	 * @param {string} attr
+	 * @param {string} attrString
 	 * @return {number}
 	 */
 	getMaxAttribute(attrString: string): number {
@@ -81,7 +80,7 @@ export class EffectableEntity extends EventEmitter {
 		const { formula } = attribute;
 
 		const requiredValues: number[] = formula.requires.map((reqAttr) =>
-			this.getMaxAttribute(reqAttr)
+			this.getMaxAttribute(reqAttr),
 		);
 
 		return formula.evaluate.apply(formula, [
@@ -93,7 +92,7 @@ export class EffectableEntity extends EventEmitter {
 	}
 
 	/**
-	 * @see {@link Attributes#add}
+	 * @see {@link Attributes.add}
 	 */
 	addAttribute(attr: Attribute) {
 		this.attributes.add(attr);
@@ -104,13 +103,13 @@ export class EffectableEntity extends EventEmitter {
 	 * @param {string} attrString
 	 * @return {number}
 	 */
-	getAttribute(attrName: string): number {
-		const attr = this.attributes.get(attrName);
-		if (!attr || !this.hasAttribute(attrName)) {
-			throw new RangeError(`Entity does not have attribute [${attrName}]`);
+	getAttribute(attrString: string): number {
+		const attr = this.attributes.get(attrString);
+		if (!attr || !this.hasAttribute(attrString)) {
+			throw new RangeError(`Entity does not have attribute [${attrString}]`);
 		}
 
-		return this.getMaxAttribute(attrName) + attr.delta;
+		return this.getMaxAttribute(attrString) + attr.delta;
 	}
 
 	/**
@@ -121,18 +120,17 @@ export class EffectableEntity extends EventEmitter {
 	getProperty(propertyName: string) {
 		if (!(propertyName in this)) {
 			throw new RangeError(
-				`Cannot evaluate uninitialized property [${propertyName}]`
+				`Cannot evaluate uninitialized property [${propertyName}]`,
 			);
 		}
 
-		//@ts-ignore
-		let propertyValue = this[propertyName];
+		let propertyValue = (this as any)[propertyName];
 
 		// deep copy non-scalar property values to prevent modifiers from actually
 		// changing the original value
 		if (
-			typeof propertyValue === 'function' ||
-			typeof propertyValue === 'object'
+			typeof propertyValue === "function" ||
+			typeof propertyValue === "object"
 		) {
 			propertyValue = JSON.parse(JSON.stringify(propertyValue));
 		}
@@ -159,7 +157,7 @@ export class EffectableEntity extends EventEmitter {
 	/**
 	 * Clears any changes to the attribute, setting it to its base value.
 	 * @param {string} attrString
-	 * @fires EffectableEntity#attributeUpdate
+	 * **Fires**: EffectableEntity#attributeUpdate
 	 */
 	setAttributeToMax(attrString: string) {
 		const attr = this.attributes.get(attrString);
@@ -168,15 +166,15 @@ export class EffectableEntity extends EventEmitter {
 		}
 
 		attr.setDelta(0);
-		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
+		this.emit("attributeUpdate", attrString, this.getAttribute(attrString));
 	}
 
 	/**
 	 * Raise an attribute by name
-	 * @param {string} attr
+	 * @param {string} attrString
 	 * @param {number} amount
-	 * @see {@link Attributes#raise}
-	 * @fires EffectableEntity#attributeUpdate
+	 * @see {@link Attribute.raise}
+	 * **Fires**: EffectableEntity#attributeUpdate
 	 */
 	raiseAttribute(attrString: string, amount: number) {
 		const attr = this.attributes.get(attrString);
@@ -185,15 +183,15 @@ export class EffectableEntity extends EventEmitter {
 		}
 
 		attr.raise(amount);
-		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
+		this.emit("attributeUpdate", attrString, this.getAttribute(attrString));
 	}
 
 	/**
 	 * Lower an attribute by name
-	 * @param {string} attr
+	 * @param {string} attrString
 	 * @param {number} amount
-	 * @see {@link Attributes#lower}
-	 * @fires EffectableEntity#attributeUpdate
+	 * @see {@link Attribute.lower}
+	 * **Fires**: EffectableEntity#attributeUpdate
 	 */
 	lowerAttribute(attrString: string, amount: number) {
 		const attr = this.attributes.get(attrString);
@@ -202,7 +200,7 @@ export class EffectableEntity extends EventEmitter {
 		}
 
 		attr.lower(amount);
-		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
+		this.emit("attributeUpdate", attrString, this.getAttribute(attrString));
 	}
 
 	/**
@@ -214,9 +212,9 @@ export class EffectableEntity extends EventEmitter {
 	 * This will _permanently_ update the base value for an attribute to be used for things like a
 	 * player purchasing a permanent upgrade or increasing a stat on level up
 	 *
-	 * @param {string} attr Attribute name
+	 * @param {string} attrString Attribute name
 	 * @param {number} newBase New base value
-	 * @fires EffectableEntity#attributeUpdate
+	 * **Fires**: EffectableEntity#attributeUpdate
 	 */
 	setAttributeBase(attrString: string, newBase: number) {
 		const attr = this.attributes.get(attrString);
@@ -225,7 +223,7 @@ export class EffectableEntity extends EventEmitter {
 		}
 
 		attr.setBase(newBase);
-		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
+		this.emit("attributeUpdate", attrString, this.getAttribute(attrString));
 	}
 
 	/**
@@ -247,7 +245,7 @@ export class EffectableEntity extends EventEmitter {
 
 	/**
 	 * @param {Effect} effect
-	 * @see {@link Effect#remove}
+	 * @see {@link Effect.remove}
 	 */
 	removeEffect(effect: Effect) {
 		this.effects.remove(effect);
@@ -263,12 +261,12 @@ export class EffectableEntity extends EventEmitter {
 	evaluateIncomingDamage(
 		damage: Damage,
 		currentAmount: number,
-		attacker?: AnyCharacter
+		attacker?: AnyCharacter,
 	) {
 		const amount = this.effects.evaluateIncomingDamage(
 			damage,
 			currentAmount,
-			attacker
+			attacker,
 		);
 		return Math.floor(amount);
 	}
@@ -283,7 +281,7 @@ export class EffectableEntity extends EventEmitter {
 	evaluateOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: AnyCharacter
+		target: AnyCharacter,
 	) {
 		return this.effects.evaluateOutgoingDamage(damage, currentAmount, target);
 	}
@@ -292,9 +290,9 @@ export class EffectableEntity extends EventEmitter {
 	 * Initialize the entity from storage
 	 * @param {GameState} state
 	 */
-	hydrate(state: IGameState, serialized = {}) {
+	hydrate(state: IGameState) {
 		if (this.__hydrated) {
-			Logger.warn('Attempted to hydrate already hydrated entity.');
+			Logger.warn("Attempted to hydrate already hydrated entity.");
 			return;
 		}
 
@@ -302,20 +300,20 @@ export class EffectableEntity extends EventEmitter {
 		const attributes = this.__attributes;
 		for (const attr in attributes) {
 			let attrConfig = attributes[attr];
-			if (typeof attrConfig === 'number') {
+			if (typeof attrConfig === "number") {
 				attrConfig = { base: attrConfig, delta: 0 };
 			}
 
-			if (typeof attrConfig !== 'object' || !('base' in attrConfig)) {
+			if (typeof attrConfig !== "object" || !("base" in attrConfig)) {
 				throw new Error(
-					'Invalid base value given to attributes.\n' +
-						JSON.stringify(attributes, null, 2)
+					"Invalid base value given to attributes.\n" +
+						JSON.stringify(attributes, null, 2),
 				);
 			}
 
 			if (!state.AttributeFactory.has(attr)) {
 				throw new Error(
-					`Entity trying to hydrate with invalid attribute ${attr}`
+					`Entity trying to hydrate with invalid attribute ${attr}`,
 				);
 			}
 
@@ -323,8 +321,8 @@ export class EffectableEntity extends EventEmitter {
 				state.AttributeFactory.create(
 					attr,
 					attrConfig.base,
-					attrConfig.delta || 0
-				)
+					attrConfig.delta || 0,
+				),
 			);
 		}
 

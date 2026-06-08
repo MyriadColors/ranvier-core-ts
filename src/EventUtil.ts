@@ -1,8 +1,8 @@
-import { StreamType } from './TransportStream';
+import { StreamType } from "./TransportStream";
 
-const sty = require('sty');
+import sty from "sty";
 
-type EventUtilReturn = (message: string) => void;
+export type EventUtilReturn = (message: string) => void;
 
 /**
  * Helper methods for colored output during input-events
@@ -15,8 +15,8 @@ export class EventUtil {
 	 */
 	static genWrite(socket: StreamType | null): EventUtilReturn {
 		return socket
-			? (string: string) => socket.write(sty.parse(string))
-			: (string: string) => {};
+			? (message: string) => socket.write(sty.parse(message))
+			: () => {};
 	}
 
 	/**
@@ -26,7 +26,7 @@ export class EventUtil {
 	 */
 	static genSay(socket: StreamType | null): EventUtilReturn {
 		return socket
-			? (string: string) => socket.write(sty.parse(string + '\r\n'))
-			: (string: string) => {};
+			? (message: string) => socket.write(sty.parse(message + "\r\n"))
+			: () => {};
 	}
 }

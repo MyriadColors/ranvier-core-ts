@@ -1,4 +1,4 @@
-import { IQuestGoalConfig, IQuestGoalState, QuestGoal } from '../src/QuestGoal';
+import { IQuestGoalConfig, IQuestGoalState, QuestGoal } from "../src/QuestGoal";
 
 export interface IBountyGoalConfig extends IQuestGoalConfig {
 	home: string | null;

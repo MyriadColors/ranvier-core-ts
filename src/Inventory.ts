@@ -1,7 +1,7 @@
-import { IGameState } from './GameState';
-import { Item, IItemDef, ISerializedItem } from './Item';
-import { Npc } from './Npc';
-import { Player } from './Player';
+import { IGameState } from "./GameState";
+import { Item, IItemDef, ISerializedItem } from "./Item";
+import { Npc } from "./Npc";
+import { Player } from "./Player";
 
 export interface IInventoryDef {
 	items?: [string, IItemDef][];
@@ -33,7 +33,7 @@ export class Inventory extends Map<string, Item> {
 				items: [],
 				max: Infinity,
 			},
-			init
+			init,
 		);
 
 		super();
@@ -117,7 +117,7 @@ export class Inventory extends Map<string, Item> {
 			}
 
 			const area = state.AreaManager.getAreaByReference(def.entityReference);
-			let newItem = state.ItemFactory.create(area, def.entityReference);
+			const newItem = state.ItemFactory.create(area, def.entityReference);
 			newItem.uuid = uuid;
 			newItem.carriedBy = carriedBy;
 			newItem.initializeInventoryFromSerialized(def.inventory || {});
@@ -127,7 +127,7 @@ export class Inventory extends Map<string, Item> {
 			/**
 			 * @event Item#spawn
 			 */
-			newItem.emit('spawn', { type: Inventory });
+			newItem.emit("spawn", { type: Inventory });
 		}
 		this.__hydated = true;
 	}
