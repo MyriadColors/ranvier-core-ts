@@ -1,12 +1,12 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 
 export type Constructor<T = EventEmitter> = new (...args: any[]) => T;
 
 /**
  * Check to see if a given object is iterable
- * @param {Object} obj
+ * @param {unknown} obj
  * @return {boolean}
  */
-export function isIterable(obj: Iterable<unknown>) {
-	return !!(obj && typeof obj[Symbol.iterator] === "function");
+export function isIterable(obj: unknown): obj is Iterable<unknown> {
+	return !!(obj && typeof (obj as any)[Symbol.iterator] === 'function');
 }

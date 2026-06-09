@@ -1,17 +1,18 @@
-import { Account } from "./Account";
-import type { Broadcast } from "./Broadcast";
-import { Character, ICharacterConfig, ISerializedCharacter } from "./Character";
-import { CommandQueue, ICommandExecutable } from "./CommandQueue";
-import { Config } from "./Config";
-import { IGameState } from "./GameState";
-import { IInventoryDef } from "./Inventory";
-import { IItemDef, ISerializedItem } from "./Item";
-import { Logger } from "./Logger";
-import { Metadata } from "./Metadatable";
-import { PlayerRoles } from "./PlayerRoles";
-import { QuestTracker, SerializedQuestTracker } from "./QuestTracker";
-import { Room } from "./Room";
-import { StreamType } from "./TransportStream";
+import { Account } from './Account';
+import type { Broadcast } from './Broadcast';
+import { Character, ICharacterConfig, ISerializedCharacter } from './Character';
+import { PlayerEvents } from './Events';
+import { CommandQueue, ICommandExecutable } from './CommandQueue';
+import { Config } from './Config';
+import { IGameState } from './GameState';
+import { IInventoryDef } from './Inventory';
+import { IItemDef, ISerializedItem } from './Item';
+import { Logger } from './Logger';
+import { Metadata } from './Metadatable';
+import { PlayerRoles } from './PlayerRoles';
+import { QuestTracker, SerializedQuestTracker } from './QuestTracker';
+import { Room } from './Room';
+import { StreamType } from './TransportStream';
 
 export interface IPlayerDef extends ICharacterConfig {
 	account: Account;
@@ -48,12 +49,15 @@ export interface ISerializedPlayer extends ISerializedCharacter {
  * @property {{completed: Array, active: Array}} questData
  * @extends Character
  */
-export class Player extends Character {
+export class Player extends Character<PlayerEvents> {
 	account: Account | null;
 	commandQueue: CommandQueue;
 	description?: string;
 	experience: number;
-	extraPrompts: Map<string, any>;
+	extraPrompts: Map<
+		string,
+		{ removeOnRender: boolean; renderer: () => string }
+	>;
 	password: string;
 	prompt: string;
 	questTracker: QuestTracker;
@@ -67,31 +71,31 @@ export class Player extends Character {
 		super(data);
 
 		this.account = data.account || null;
-		this.description = data.description || "";
+		this.description = data.description || '';
 		this.experience = data.experience || 0;
 		this.extraPrompts = new Map();
 		this.password = data.password;
-		this.prompt = data.prompt || "> ";
+		this.prompt = data.prompt || '> ';
 		this.socket = data.socket || null;
 		const questData = Object.assign(
 			{
 				completed: [],
 				active: [],
 			},
-			data.quests,
+			data.quests
 		);
 
 		this.questTracker = new QuestTracker(
 			this,
 			questData.active,
-			questData.completed,
+			questData.completed
 		);
 		this.commandQueue = new CommandQueue();
 		this.role = data.role || PlayerRoles.PLAYER;
 
 		// Default max inventory size config
 		if (!isFinite(this.inventory.getMax())) {
-			this.inventory.setMax(Config.get("defaultMaxPlayerInventory", 20));
+			this.inventory.setMax(Config.get('defaultMaxPlayerInventory', 20));
 		}
 	}
 
@@ -100,15 +104,19 @@ export class Player extends Character {
 	 */
 	queueCommand(executable: ICommandExecutable, lag: number) {
 		const index = this.commandQueue.enqueue(executable, lag);
-		this.emit("commandQueued", index);
+		this.emit('commandQueued', index);
 	}
 
 	/**
 	 * Proxy all events on the player to the quest tracker
-	 * @param {string} event
+	 * @param {string | symbol} event
 	 * @param {...*}   args
 	 */
-	emit(event: string, ...args: any) {
+	emit<K extends keyof PlayerEvents>(
+		event: K,
+		...args: PlayerEvents[K]
+	): boolean;
+	emit(event: string | symbol, ...args: unknown[]): boolean {
 		if (this.__pruned || !this.__hydrated) {
 			return false;
 		}
@@ -126,7 +134,7 @@ export class Player extends Character {
 	 */
 	interpolatePrompt(
 		promptStr: string,
-		extraData: Record<string, unknown> = {},
+		extraData: Record<string, unknown> = {}
 	) {
 		const attributeData: Record<string, unknown> = {};
 		for (const [attr] of this.attributes) {
@@ -141,12 +149,15 @@ export class Player extends Character {
 		let matches = promptStr.match(/%([a-z.]+)%/);
 		while (matches) {
 			const token = matches[1];
-			let promptValue: any = token
-				.split(".")
-				.reduce((obj: any, index: string) => obj && obj[index], promptData);
+			let promptValue: unknown = token
+				.split('.')
+				.reduce(
+					(obj: any, index: string) => obj && obj[index],
+					promptData as any
+				);
 
 			if (promptValue === null || promptValue === undefined) {
-				promptValue = "invalid-token";
+				promptValue = 'invalid-token';
 			}
 			promptStr = promptStr.replace(matches[0], promptValue as string);
 			matches = promptStr.match(/%([a-z.]+)%/);
@@ -164,8 +175,8 @@ export class Player extends Character {
 	 */
 	addPrompt(
 		id: string,
-		renderer: (...args: any[]) => any,
-		removeOnRender: boolean = false,
+		renderer: () => string,
+		removeOnRender: boolean = false
 	) {
 		this.extraPrompts.set(id, { removeOnRender, renderer });
 	}
@@ -193,7 +204,7 @@ export class Player extends Character {
 	 * **Fires**: Room#playerEnter
 	 * **Fires**: Player#enterRoom
 	 */
-	moveTo(nextRoom: Room, onMoved = (_?: any) => _) {
+	moveTo(nextRoom: Room, onMoved: () => void = () => {}) {
 		const prevRoom = this.room;
 		if (this.room && this.room !== nextRoom) {
 			/**
@@ -201,7 +212,7 @@ export class Player extends Character {
 			 * @param {Player} player
 			 * @param {Room} nextRoom
 			 */
-			this.room.emit("playerLeave", this, nextRoom);
+			this.room.emit('playerLeave', this, nextRoom);
 			this.room.removePlayer(this);
 		}
 
@@ -215,20 +226,20 @@ export class Player extends Character {
 		 * @param {Player} player
 		 * @param {Room} prevRoom
 		 */
-		nextRoom.emit("playerEnter", this, prevRoom);
+		nextRoom.emit('playerEnter', this, prevRoom);
 		/**
 		 * @event Player#enterRoom
 		 * @param {Room} room
 		 */
-		this.emit("enterRoom", nextRoom);
+		this.emit('enterRoom', nextRoom);
 	}
 
-	save(callback?: (...args: any[]) => any) {
+	save(callback?: () => void) {
 		if (!this.__hydrated) {
 			return;
 		}
 
-		this.emit("save", callback);
+		this.emit('save', callback);
 	}
 
 	hydrate(state: IGameState) {
@@ -249,10 +260,10 @@ export class Player extends Character {
 				const itemDef = eqDefs[slot];
 				try {
 					const entityReference = itemDef.entityReference;
-					const area = itemDef.area ?? itemDef.entityReference.split(":")[0];
+					const area = itemDef.area ?? itemDef.entityReference.split(':')[0];
 					const newItem = state.ItemFactory.create(
 						state.AreaManager.getArea(area),
-						entityReference,
+						entityReference
 					);
 
 					const inventory = itemDef.inventory;
@@ -266,16 +277,18 @@ export class Player extends Character {
 					/**
 					 * @event Item#spawn
 					 */
-					newItem.emit("spawn", { type: Player });
-				} catch (e: any) {
-					Logger.error(e?.message);
+					newItem.emit('spawn', { type: Player });
+				} catch (e: unknown) {
+					if (e instanceof Error) {
+						Logger.error(e.message);
+					}
 				}
 			}
 		} else {
 			this.equipment = new Map();
 		}
 
-		if (typeof this.room === "string") {
+		if (typeof this.room === 'string') {
 			let room;
 			try {
 				room = state.RoomManager.getRoom(this.room);
@@ -285,11 +298,11 @@ export class Player extends Character {
 
 			if (!room) {
 				Logger.error(
-					`ERROR: Player ${this.name} was saved to invalid room ${this.room}.`,
+					`ERROR: Player ${this.name} was saved to invalid room ${this.room}.`
 				);
 
 				room =
-					state.AreaManager.getPlaceholderArea().getRoomById("placeholder");
+					state.AreaManager.getPlaceholderArea().getRoomById('placeholder');
 			}
 
 			this.room = room;
@@ -298,7 +311,7 @@ export class Player extends Character {
 	}
 
 	serialize(): ISerializedPlayer {
-		const account = this.account?.username || "";
+		const account = this.account?.username || '';
 
 		const experience = this.experience;
 		const inventory = this.inventory && this.inventory.serialize();

@@ -1,14 +1,15 @@
-import { AreaFloor } from "./AreaFloor";
-import { Broadcast, Broadcastable } from "./Broadcast";
-import { ISerializedEffect } from "./Effect";
-import { SerializedAttributes } from "./EffectableEntity";
-import { EntityDefinitionBase } from "./EntityFactory";
-import { GameEntity } from "./GameEntity";
-import { IGameState } from "./GameState";
-import { Metadata } from "./Metadatable";
-import { Npc } from "./Npc";
-import { Player } from "./Player";
-import { Room } from "./Room";
+import { AreaFloor } from './AreaFloor';
+import { Broadcast, Broadcastable } from './Broadcast';
+import { ISerializedEffect } from './Effect';
+import { SerializedAttributes } from './EffectableEntity';
+import { EntityDefinitionBase } from './EntityFactory';
+import { GameEntity } from './GameEntity';
+import { AreaEvents } from './Events';
+import { IGameState } from './GameState';
+import { Metadata } from './Metadatable';
+import { Npc } from './Npc';
+import { Player } from './Player';
+import { Room } from './Room';
 
 export interface IAreaDef extends EntityDefinitionBase {
 	bundle: string;
@@ -23,7 +24,7 @@ export interface IAreaManifest {
 	title: string;
 	metadata?: Metadata;
 	script?: string;
-	behaviors?: Record<string, any>;
+	behaviors?: Record<string, unknown>;
 	attributes?: SerializedAttributes;
 	effects?: ISerializedEffect[];
 }
@@ -46,7 +47,7 @@ export interface IAreaManifest {
  *
  * @extends GameEntity
  */
-export class Area extends GameEntity {
+export class Area extends GameEntity<AreaEvents> {
 	/** Bundle this area comes from */
 	bundle: string | null;
 	/** @property {string} name */
@@ -62,7 +63,7 @@ export class Area extends GameEntity {
 	/** Active NPCs that originate from this area. Note: this is NPCs that */
 	npcs: Set<Npc>;
 	metadata: Metadata;
-	behaviors: Map<string, any>;
+	behaviors: Map<string, unknown>;
 
 	constructor(bundle: string | null, name: string, manifest: IAreaManifest) {
 		super(manifest);
@@ -76,7 +77,7 @@ export class Area extends GameEntity {
 		this.script = manifest.script;
 		this.behaviors = new Map(Object.entries(manifest.behaviors || {}));
 
-		this.on("updateTick", () => {
+		this.on('updateTick', () => {
 			this.update();
 		});
 	}
@@ -124,7 +125,7 @@ export class Area extends GameEntity {
 		 * @event Area#roomAdded
 		 * @param {Room} room
 		 */
-		this.emit("roomAdded", room);
+		this.emit('roomAdded', room);
 	}
 
 	/**
@@ -138,7 +139,7 @@ export class Area extends GameEntity {
 		 * @event Area#roomRemoved
 		 * @param {Room} room
 		 */
-		this.emit("roomRemoved", room);
+		this.emit('roomRemoved', room);
 	}
 
 	/**
@@ -147,7 +148,7 @@ export class Area extends GameEntity {
 	 */
 	addRoomToMap(room: Room) {
 		if (!room.coordinates) {
-			throw new Error("Room does not have coordinates");
+			throw new Error('Room does not have coordinates');
 		}
 
 		const { x, y, z } = room.coordinates;
@@ -169,7 +170,7 @@ export class Area extends GameEntity {
 	 */
 	removeRoomFromMap(room: Room) {
 		if (!room.coordinates) {
-			throw new Error("Room does not have coordinates");
+			throw new Error('Room does not have coordinates');
 		}
 
 		const { x, y, z } = room.coordinates;
@@ -227,7 +228,7 @@ export class Area extends GameEntity {
 			 * @see Area#update
 			 * @event Room#updateTick
 			 */
-			room.emit("updateTick");
+			room.emit('updateTick');
 		}
 
 		for (const npc of this.npcs) {
@@ -235,7 +236,7 @@ export class Area extends GameEntity {
 			 * @see Area#update
 			 * @event Npc#updateTick
 			 */
-			npc.emit("updateTick");
+			npc.emit('updateTick');
 		}
 	}
 
@@ -252,7 +253,7 @@ export class Area extends GameEntity {
 			 * Fires after the room is hydrated and added to its area
 			 * @event Room#ready
 			 */
-			room.emit("ready");
+			room.emit('ready');
 		}
 	}
 
@@ -265,7 +266,7 @@ export class Area extends GameEntity {
 	broadcast(
 		message: string,
 		excludes: Broadcastable | Broadcastable[] = [],
-		wrapWidth?: number,
+		wrapWidth?: number
 	) {
 		const excludeArray = Array.isArray(excludes) ? excludes : [excludes];
 		Broadcast.sayAtExcept(this, message, excludeArray, wrapWidth);
@@ -279,7 +280,7 @@ export class Area extends GameEntity {
 	getBroadcastTargets() {
 		const roomTargets = [...this.rooms].reduce(
 			(acc, [, room]) => acc.concat(room.getBroadcastTargets()),
-			[] as (Room | Player | Npc)[],
+			[] as (Room | Player | Npc)[]
 		);
 		return [this, ...roomTargets];
 	}

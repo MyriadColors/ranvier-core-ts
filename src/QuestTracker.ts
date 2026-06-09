@@ -1,11 +1,12 @@
-import { EntityReference } from "./EntityReference";
-import { IGameState } from "./GameState";
-import { Player } from "./Player";
-import { ISerializedQuestDef, Quest } from "./Quest";
+import { EntityReference } from './EntityReference';
+import { IGameState } from './GameState';
+import { Player } from './Player';
+import { ISerializedQuestDef, Quest } from './Quest';
+import { ISerializedQuestGoal } from './QuestGoal';
 
 export interface IQuestTrackerActiveDef {
 	started?: string;
-	state?: Record<string, any>;
+	state?: Record<string, unknown>;
 }
 
 export interface IQuestTrackerCompletedDef {
@@ -27,9 +28,7 @@ export type SerializedQuestTracker = {
  */
 export class QuestTracker {
 	player: Player;
-	activeQuests:
-		| Map<EntityReference, Quest>
-		| Map<string, IQuestTrackerActiveDef>;
+	activeQuests: Map<EntityReference, Quest | IQuestTrackerActiveDef>;
 	completedQuests: Map<EntityReference, IQuestTrackerCompletedDef>;
 	/**
 	 * @param {Player} player
@@ -39,7 +38,7 @@ export class QuestTracker {
 	constructor(
 		player: Player,
 		active: Iterable<readonly [string, IQuestTrackerActiveDef | Quest]>,
-		completed: Iterable<readonly [string, IQuestTrackerCompletedDef]>,
+		completed: Iterable<readonly [string, IQuestTrackerCompletedDef]>
 	) {
 		this.player = player;
 
@@ -49,13 +48,13 @@ export class QuestTracker {
 
 	/**
 	 * Proxy events to all active quests
-	 * @param {string} event
+	 * @param {string | symbol} event
 	 * @param {...*}   args
 	 */
-	emit(event: string, ...args: any[]) {
+	emit(event: string | symbol, ...args: unknown[]) {
 		for (const [qid, quest] of this.activeQuests) {
 			if (!(quest as Quest).emit) {
-				throw new Error("Attempting to emit to a non-hydrated quest: " + qid);
+				throw new Error('Attempting to emit to a non-hydrated quest: ' + qid);
 			}
 			(quest as Quest).emit(event, ...args);
 		}
@@ -90,7 +89,8 @@ export class QuestTracker {
 		}
 
 		this.completedQuests.set(qid, {
-			started: this.activeQuests.get(qid)?.started || new Date().toJSON(),
+			started:
+				(this.activeQuests.get(qid) as Quest)?.started || new Date().toJSON(),
 			completedAt: new Date().toJSON(),
 		});
 
@@ -108,7 +108,7 @@ export class QuestTracker {
 
 		quest.started = new Date().toJSON();
 		this.activeQuests.set(qid, quest);
-		quest.emit("start");
+		quest.emit('start');
 	}
 
 	/**
@@ -116,13 +116,14 @@ export class QuestTracker {
 	 */
 	hydrate(state: IGameState) {
 		for (const [qid, data] of this.activeQuests) {
+			const activeData = data as IQuestTrackerActiveDef;
 			const quest = state.QuestFactory.create(
 				state,
 				qid,
 				this.player,
-				data.state as ISerializedQuestDef[],
+				activeData.state as unknown as ISerializedQuestGoal[]
 			);
-			quest.started = data.started;
+			quest.started = activeData.started;
 			quest.hydrate();
 
 			this.activeQuests.set(qid, quest);

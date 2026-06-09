@@ -1,5 +1,5 @@
-import { Account } from "./Account";
-import { EntityLoader } from "./EntityLoader";
+import { Account, ISerializedAccount } from './Account';
+import { EntityLoader } from './EntityLoader';
 
 /**
  * Creates/loads {@linkplain Account|Accounts}
@@ -54,10 +54,10 @@ export class AccountManager {
 		}
 
 		if (!this.loader) {
-			throw new Error("No entity loader configured for accounts");
+			throw new Error('No entity loader configured for accounts');
 		}
 
-		const data = await this.loader.fetch(username);
+		const data = (await this.loader.fetch(username)) as ISerializedAccount;
 
 		const account = new Account(data);
 		this.addAccount(account);

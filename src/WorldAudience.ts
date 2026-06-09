@@ -1,4 +1,4 @@
-import { ChannelAudience } from "./ChannelAudience";
+import { ChannelAudience } from './ChannelAudience';
 
 /**
  * Audience class representing everyone in the game, except sender.
@@ -7,7 +7,7 @@ import { ChannelAudience } from "./ChannelAudience";
 export class WorldAudience extends ChannelAudience {
 	getBroadcastTargets() {
 		return (this.state?.PlayerManager || []).filter(
-			(player) => player !== this.sender,
+			(player) => player !== this.sender
 		);
 	}
 }

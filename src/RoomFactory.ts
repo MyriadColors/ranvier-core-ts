@@ -1,7 +1,7 @@
-import { Area } from "./Area";
-import { EntityFactory } from "./EntityFactory";
-import { EntityReference } from "./EntityReference";
-import { IRoomDef, Room } from "./Room";
+import { Area } from './Area';
+import { EntityFactory } from './EntityFactory';
+import { EntityReference } from './EntityReference';
+import { IRoomDef, Room } from './Room';
 
 /**
  * Stores definitions of rooms to allow for easy creation/cloning

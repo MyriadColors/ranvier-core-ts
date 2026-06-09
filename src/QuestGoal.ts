@@ -1,6 +1,6 @@
-import { EventEmitter } from "events";
-import { Player } from "./Player";
-import { Quest } from "./Quest";
+import { EventEmitter } from 'events';
+import { Player } from './Player';
+import { Quest } from './Quest';
 
 export interface IQuestGoalDef {
 	name: string;
@@ -23,11 +23,11 @@ export interface IQuestGoalProgress {
 }
 
 export interface IQuestGoalConfig {
-	[key: string]: any;
+	[key: string]: unknown;
 }
 
 export interface IQuestGoalState {
-	[key: string]: any;
+	[key: string]: unknown;
 }
 
 /**
@@ -56,7 +56,7 @@ export class QuestGoal<
 			{
 				// no defaults currently
 			},
-			config,
+			config
 		);
 		this.quest = quest;
 		this.state = {} as TState;
@@ -67,7 +67,7 @@ export class QuestGoal<
 		return {
 			percent: 0,
 			display:
-				"[WARNING] Quest does not have progress display configured. Please tell an admin",
+				'[WARNING] Quest does not have progress display configured. Please tell an admin',
 		};
 	}
 

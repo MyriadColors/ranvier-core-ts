@@ -1,14 +1,21 @@
-import { Broadcast, Broadcastable } from "./Broadcast";
-import { ChannelAudience } from "./ChannelAudience";
-import { PlayerOrNpc } from "./GameEntity";
-import { IGameState } from "./GameState";
-import { PartyAudience } from "./PartyAudience";
-import { Player } from "./Player";
-import { PlayerRoles } from "./PlayerRoles";
-import { PrivateAudience } from "./PrivateAudience";
-import { WorldAudience } from "./WorldAudience";
+import { Broadcast, Broadcastable } from './Broadcast';
+import { ChannelAudience } from './ChannelAudience';
+import { PlayerOrNpc } from './GameEntity';
+import { IGameState } from './GameState';
+import { PartyAudience } from './PartyAudience';
+import { Player } from './Player';
+import { PlayerRoles } from './PlayerRoles';
+import { PrivateAudience } from './PrivateAudience';
+import { WorldAudience } from './WorldAudience';
 
 export type IChannelLoader = Channel[];
+
+export type ChannelFormatter = (
+	sender: PlayerOrNpc,
+	target: Broadcastable | null,
+	message: string,
+	colorify: (msg: string) => string
+) => string;
 
 export interface IChannelConfig {
 	/** @property {string} name Name of the channel */
@@ -23,8 +30,8 @@ export interface IChannelConfig {
 	color?: string;
 	/** @property {{sender: function, target: function}} [formatter] */
 	formatter: {
-		sender: (...args: any[]) => any;
-		target: (...args: any[]) => any;
+		sender: ChannelFormatter;
+		target: ChannelFormatter;
 	};
 	bundle?: string;
 	aliases?: string[];
@@ -54,8 +61,8 @@ export class Channel {
 	description: string;
 	/** @property {{sender: function, target: function}} [formatter] */
 	formatter: {
-		sender: (...args: any[]) => any;
-		target: (...args: any[]) => any;
+		sender: ChannelFormatter;
+		target: ChannelFormatter;
 	};
 	bundle: string | null;
 	aliases: string[] | null;
@@ -73,14 +80,14 @@ export class Channel {
 	 */
 	constructor(config: IChannelConfig) {
 		if (!config.name) {
-			throw new Error("Channels must have a name to be usable.");
+			throw new Error('Channels must have a name to be usable.');
 		}
 		if (!config.audience) {
 			throw new Error(`Channel ${config.name} is missing a valid audience.`);
 		}
 		this.name = config.name;
 		this.minRequiredRole =
-			typeof config.minRequiredRole !== "undefined"
+			typeof config.minRequiredRole !== 'undefined'
 				? config.minRequiredRole
 				: null;
 		this.description = config.description;
@@ -110,7 +117,7 @@ export class Channel {
 
 		if (!this.audience) {
 			throw new Error(
-				`Channel [${this.name} has invalid audience [${this.audience}]`,
+				`Channel [${this.name} has invalid audience [${this.audience}]`
 			);
 		}
 
@@ -134,18 +141,13 @@ export class Channel {
 						sender,
 						targets[0],
 						message,
-						this.colorify.bind(this),
-					),
+						this.colorify.bind(this)
+					)
 				);
 			} else {
 				Broadcast.sayAt(
 					sender,
-					this.formatter.sender(
-						sender,
-						null,
-						message,
-						this.colorify.bind(this),
-					),
+					this.formatter.sender(sender, null, message, this.colorify.bind(this))
 				);
 			}
 			if (!message.length) {
@@ -156,17 +158,12 @@ export class Channel {
 
 			Broadcast.sayAt(
 				sender,
-				this.formatter.sender(
-					sender,
-					target,
-					message,
-					this.colorify.bind(this),
-				),
+				this.formatter.sender(sender, target, message, this.colorify.bind(this))
 			);
 		} else {
 			Broadcast.sayAt(
 				sender,
-				this.formatter.sender(sender, null, message, this.colorify.bind(this)),
+				this.formatter.sender(sender, null, message, this.colorify.bind(this))
 			);
 		}
 
@@ -179,13 +176,13 @@ export class Channel {
 					sender,
 					target,
 					message,
-					this.colorify.bind(this),
+					this.colorify.bind(this)
 				);
-			},
+			}
 		);
 
 		// strip color tags
-		const rawMessage = message.replace(/<\/?\w+?>/gm, "");
+		const rawMessage = message.replace(/<\/?\w+?>/gm, '');
 
 		// Emit channel events
 
@@ -194,7 +191,7 @@ export class Channel {
 		 * @param {Channel} channel
 		 * @param {string} rawMessage
 		 */
-		sender.emit("channelSend", this, rawMessage);
+		sender.emit('channelSend', this, rawMessage);
 
 		for (const target of targets) {
 			/**
@@ -206,13 +203,13 @@ export class Channel {
 			 * @param {Character} sender
 			 * @param {string} rawMessage
 			 */
-			target.emit("channelReceive", this, sender, rawMessage);
+			target.emit('channelReceive', this, sender, rawMessage);
 		}
 	}
 
 	describeSelf(sender: Player) {
 		Broadcast.sayAt(sender, `\r\nChannel: ${this.name}`);
-		Broadcast.sayAt(sender, "Syntax: " + this.getUsage());
+		Broadcast.sayAt(sender, 'Syntax: ' + this.getUsage());
 		if (this.description) {
 			Broadcast.sayAt(sender, this.description);
 		}
@@ -237,10 +234,10 @@ export class Channel {
 	 */
 	formatToSender(
 		sender: PlayerOrNpc,
-		target: PlayerOrNpc,
+		target: Broadcastable | null,
 		message: string,
-		colorify: (...args: any[]) => any,
-	) {
+		colorify: (msg: string) => string
+	): string {
 		return colorify(`[${this.name}] ${sender.name}: ${message}`);
 	}
 
@@ -255,14 +252,14 @@ export class Channel {
 	 */
 	formatToReceipient(
 		sender: PlayerOrNpc,
-		target: PlayerOrNpc,
+		target: Broadcastable | null,
 		message: string,
-		colorify: (...args: any[]) => any,
-	) {
+		colorify: (msg: string) => string
+	): string {
 		return this.formatToSender(sender, target, message, colorify);
 	}
 
-	colorify(message: string) {
+	colorify(message: string): string {
 		if (!this.color) {
 			return message;
 		}
@@ -271,11 +268,11 @@ export class Channel {
 
 		const open = (colors as string[])
 			.map((color: string) => `<${color}>`)
-			.join("");
+			.join('');
 		const close = colors
 			.reverse()
 			.map((color) => `</${color}>`)
-			.join("");
+			.join('');
 
 		return open + message + close;
 	}

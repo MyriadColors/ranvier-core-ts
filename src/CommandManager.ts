@@ -1,4 +1,4 @@
-import { Command } from "./Command";
+import { Command } from './Command';
 
 /**
  * Contains all active in game commands
@@ -27,7 +27,7 @@ export class CommandManager {
 		this.commands.set(command.name, command);
 		if (command.aliases) {
 			command.aliases.forEach((alias: string) =>
-				this.commands.set(alias, command),
+				this.commands.set(alias, command)
 			);
 		}
 	}

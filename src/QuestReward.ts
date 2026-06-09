@@ -1,8 +1,12 @@
+import { IGameState } from './GameState';
+import { Player } from './Player';
+import { Quest } from './Quest';
+
 export interface IQuestRewardDef {
 	name: string;
 	type: string;
-	config: IQuestRewardDef;
-	[key: string]: any;
+	config: Record<string, unknown>;
+	[key: string]: unknown;
 }
 
 /**
@@ -18,15 +22,25 @@ export class QuestReward {
 	 * @param {object} config
 	 * @param {Player} player
 	 */
-	static reward(GameState: any, quest: any, config: any, player: any): void {
-		throw new Error("Quest reward not implemented");
+	static reward(
+		GameState: IGameState,
+		quest: Quest,
+		config: Record<string, unknown>,
+		player: Player
+	): void {
+		throw new Error('Quest reward not implemented');
 	}
 
 	/**
 	 * Render the reward
 	 * @return string
 	 */
-	static display(GameState: any, quest: any, config: any, player: any): string {
-		throw new Error("Quest reward display not implemented");
+	static display(
+		GameState: IGameState,
+		quest: Quest,
+		config: Record<string, unknown>,
+		player: Player
+	): string {
+		throw new Error('Quest reward display not implemented');
 	}
 }

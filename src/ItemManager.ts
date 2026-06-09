@@ -1,6 +1,6 @@
-import { Item } from "./Item";
-import { ItemType } from "./ItemType";
-import { Room } from "./Room";
+import { Item } from './Item';
+import { ItemType } from './ItemType';
+import { Room } from './Room';
 
 /**
  * Keep track of all items in game
@@ -13,6 +13,14 @@ export class ItemManager {
 
 	add(item: Item) {
 		this.items.add(item);
+	}
+
+	/**
+	 * @param {string} ref
+	 * @return {Item | undefined}
+	 */
+	getItem(ref: string): Item | undefined {
+		return [...this.items].find((item) => item.uuid === ref);
 	}
 
 	remove(item: Item) {
@@ -41,7 +49,7 @@ export class ItemManager {
 			/**
 			 * @event Item#updateTick
 			 */
-			item.emit("updateTick");
+			item.emit('updateTick');
 		}
 	}
 }

@@ -1,13 +1,13 @@
-import { EventEmitter } from "events";
-import { Account } from "./Account";
-import { Data } from "./Data";
-import { EffectableEntity } from "./EffectableEntity";
-import { EntityLoader } from "./EntityLoader";
-import { EventManager } from "./EventManager";
-import { IGameState } from "./GameState";
-import { Item } from "./Item";
-import { Logger } from "./Logger";
-import { Player } from "./Player";
+import { EventEmitter } from 'events';
+import { Account } from './Account';
+import { Data } from './Data';
+import { EffectableEntity } from './EffectableEntity';
+import { EntityLoader } from './EntityLoader';
+import { EventManager } from './EventManager';
+import { IGameState } from './GameState';
+import { Item } from './Item';
+import { Logger } from './Logger';
+import { IPlayerDef, Player } from './Player';
 
 /**
  * Keeps track of all active players in game
@@ -28,7 +28,7 @@ export class PlayerManager extends EventEmitter {
 		this.players = new Map();
 		this.events = new EventManager();
 		this.loader = null;
-		this.on("updateTick", this.tickAll);
+		this.on('updateTick', this.tickAll);
 	}
 
 	/**
@@ -91,7 +91,7 @@ export class PlayerManager extends EventEmitter {
 	 * @param {string}   event
 	 * @param {Function} listener
 	 */
-	addListener(event: string, listener: (...args: any[]) => void): this {
+	addListener(event: string, listener: (...args: unknown[]) => void): this {
 		this.events.add(event, listener);
 		return this;
 	}
@@ -101,7 +101,7 @@ export class PlayerManager extends EventEmitter {
 	 * @return {array},
 	 */
 	filter(
-		predicate: (player: Player, index: number, array: Player[]) => boolean,
+		predicate: (player: Player, index: number, array: Player[]) => boolean
 	) {
 		return this.getPlayersAsArray().filter(predicate);
 	}
@@ -118,21 +118,21 @@ export class PlayerManager extends EventEmitter {
 		state: IGameState,
 		account: Account,
 		username: string,
-		force?: boolean,
+		force?: boolean
 	) {
 		if (this.players.has(username) && !force) {
 			return this.getPlayer(username);
 		}
 
 		if (!this.loader) {
-			throw new Error("No entity loader configured for players");
+			throw new Error('No entity loader configured for players');
 		}
 
-		const data = await this.loader.fetch(username);
+		const data = (await this.loader.fetch(username)) as any;
 		data.name = username;
 		data.account = account;
 
-		const player = new Player(data);
+		const player = new Player(data as IPlayerDef);
 
 		this.events.attach(player as EffectableEntity);
 
@@ -154,7 +154,7 @@ export class PlayerManager extends EventEmitter {
 	 * @return {boolean}
 	 */
 	exists(name: string) {
-		return Data.exists("player", name);
+		return Data.exists('player', name);
 	}
 
 	/**
@@ -163,16 +163,16 @@ export class PlayerManager extends EventEmitter {
 	 */
 	async save(player: Player) {
 		if (!this.loader) {
-			throw new Error("No entity loader configured for players");
+			throw new Error('No entity loader configured for players');
 		}
-		Logger.warn("Serializing...");
+		Logger.warn('Serializing...');
 		const serialized = player.serialize();
 		await this.loader.update(player.name, serialized);
 
 		/**
 		 * @event Player#saved
 		 */
-		player.emit("saved");
+		player.emit('saved');
 	}
 
 	/**
@@ -193,7 +193,7 @@ export class PlayerManager extends EventEmitter {
 			/**
 			 * @event Player#updateTick
 			 */
-			player.emit("updateTick");
+			player.emit('updateTick');
 		}
 	}
 

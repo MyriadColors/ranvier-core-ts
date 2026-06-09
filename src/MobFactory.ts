@@ -1,7 +1,7 @@
-import { Area } from "./Area";
-import { EntityFactory } from "./EntityFactory";
-import { EntityReference } from "./EntityReference";
-import { INpcDef, Npc } from "./Npc";
+import { Area } from './Area';
+import { EntityFactory } from './EntityFactory';
+import { EntityReference } from './EntityReference';
+import { INpcDef, Npc } from './Npc';
 
 /**
  * Stores definitions of npcs to allow for easy creation/cloning

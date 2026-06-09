@@ -1,4 +1,4 @@
-import { EventManager } from "./EventManager";
+import { EventManager } from './EventManager';
 
 export interface IBehavior {
 	[key: string]: unknown;
@@ -41,7 +41,7 @@ export class BehaviorManager {
 	addListener(
 		behaviorName: string,
 		event: string,
-		listener: (...args: any[]) => void,
+		listener: (...args: unknown[]) => void
 	) {
 		if (!this.behaviors.has(behaviorName)) {
 			this.behaviors.set(behaviorName, new EventManager());

@@ -1,18 +1,18 @@
-import { Area } from "./Area";
-import type { Broadcast } from "./Broadcast";
-import { Character, ICharacterConfig } from "./Character";
-import { CommandQueue } from "./CommandQueue";
-import { EntityDefinitionBase } from "./EntityFactory";
-import { EntityReference } from "./EntityReference";
-import { IGameState } from "./GameState";
-import { IItemDef } from "./Item";
-import { Logger } from "./Logger";
-import { Room } from "./Room";
+import { Area } from './Area';
+import type { Broadcast } from './Broadcast';
+import { Character, ICharacterConfig } from './Character';
+import { CommandQueue } from './CommandQueue';
+import { EntityDefinitionBase } from './EntityFactory';
+import { EntityReference } from './EntityReference';
+import { IGameState } from './GameState';
+import { IItemDef } from './Item';
+import { Logger } from './Logger';
+import { Room } from './Room';
 
-import { v4 as uuid } from "uuid";
+import { v4 as uuid } from 'uuid';
 
 export interface INpcDef extends ICharacterConfig, EntityDefinitionBase {
-	behaviors?: Record<string, any>;
+	behaviors?: Record<string, unknown>;
 	equipment?:
 		| Record<string, IItemDef>
 		| Record<string, { entityReference: string }>;
@@ -27,7 +27,7 @@ export interface INpcDef extends ICharacterConfig, EntityDefinitionBase {
 export class Npc extends Character {
 	area: Area;
 	script?: string;
-	behaviors?: Map<string, any>;
+	behaviors?: Map<string, unknown>;
 	defaultEquipment: Record<string, { entityReference: EntityReference }>;
 	defaultItems: EntityReference[];
 	description: string;
@@ -40,7 +40,7 @@ export class Npc extends Character {
 	sourceRoom: Room | null;
 	__pruned: boolean = false;
 
-	static validate: (keyof Npc)[] = ["name", "id"];
+	static validate: (keyof Npc)[] = ['name', 'id'];
 	constructor(area: Area, data: INpcDef) {
 		super(data);
 
@@ -48,8 +48,8 @@ export class Npc extends Character {
 			if (!(prop in data)) {
 				throw new ReferenceError(
 					`NPC in area [${area.name}] missing required property [${String(
-						prop,
-					)}]`,
+						prop
+					)}]`
 				);
 			}
 		}
@@ -80,7 +80,7 @@ export class Npc extends Character {
 	 * **Fires**: Room#npcEnter
 	 * **Fires**: Npc#enterRoom
 	 */
-	moveTo(nextRoom: Room, onMoved: any = (_: any) => _) {
+	moveTo(nextRoom: Room, onMoved: () => void = () => {}) {
 		const prevRoom = this.room;
 		if (this.room) {
 			/**
@@ -88,7 +88,7 @@ export class Npc extends Character {
 			 * @param {Npc} npc
 			 * @param {Room} nextRoom
 			 */
-			this.room.emit("npcLeave", this, nextRoom);
+			this.room.emit('npcLeave', this, nextRoom);
 			this.room.removeNpc(this);
 		}
 
@@ -102,12 +102,12 @@ export class Npc extends Character {
 		 * @param {Npc} npc
 		 * @param {Room} prevRoom
 		 */
-		nextRoom.emit("npcEnter", this, prevRoom);
+		nextRoom.emit('npcEnter', this, prevRoom);
 		/**
 		 * @event Npc#enterRoom
 		 * @param {Room} room
 		 */
-		this.emit("enterRoom", nextRoom);
+		this.emit('enterRoom', nextRoom);
 	}
 
 	hydrate(state: IGameState) {
@@ -118,7 +118,7 @@ export class Npc extends Character {
 
 		for (const defaultItemId of this.defaultItems) {
 			Logger.verbose(
-				`\tDIST: Adding item [${defaultItemId}] to npc [${this.name}]`,
+				`\tDIST: Adding item [${defaultItemId}] to npc [${this.name}]`
 			);
 			const newItem = state.ItemFactory.create(this.area, defaultItemId);
 
@@ -128,16 +128,16 @@ export class Npc extends Character {
 			/**
 			 * @event Item#spawn
 			 */
-			newItem.emit("spawn");
+			newItem.emit('spawn');
 		}
 
 		for (const [slot, defaultEqId] of Object.entries(this.defaultEquipment)) {
 			Logger.verbose(
-				`\tDIST: Equipping item [${defaultEqId}] to npc [${this.name}] in slot [${slot}]`,
+				`\tDIST: Equipping item [${defaultEqId}] to npc [${this.name}] in slot [${slot}]`
 			);
 			const newItem = state.ItemFactory.create(
 				this.area,
-				defaultEqId.entityReference,
+				defaultEqId.entityReference
 			);
 			newItem.hydrate(state);
 			state.ItemManager.add(newItem);
@@ -145,23 +145,20 @@ export class Npc extends Character {
 			/**
 			 * @event Item#spawn
 			 */
-			newItem.emit("spawn", { type: Npc });
+			newItem.emit('spawn', { type: Npc });
 		}
 
 		return Object.assign(
 			{},
 			{
 				script: this.script,
-				behaviors: new Map(
-					(this.behaviors as Iterable<readonly [unknown, unknown]>) ||
-						new Map(),
-				),
+				behaviors: new Map(this.behaviors || new Map()),
 				defaultEquipment: this.defaultEquipment || {},
 				defaultItems: this.defaultItems || [],
 				keywords: this.keywords,
 				quests: this.quests,
 				metadata: this.metadata,
-			},
+			}
 		);
 	}
 

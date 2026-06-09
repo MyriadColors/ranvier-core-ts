@@ -1,16 +1,17 @@
-import { ISerializedEffectableEntity } from "./EffectableEntity";
-import { Broadcast } from "./Broadcast";
-import { Damage } from "./Damage";
-import { Heal } from "./Heal";
-import { IItemDef, Item } from "./Item";
-import { IInventoryDef, Inventory, InventoryFullError } from "./Inventory";
-import { Room } from "./Room";
-import { Config } from "./Config";
-import { Party } from "./Party";
-import { EquipSlotTakenError, EquipAlreadyEquippedError } from "./EquipErrors";
-import { EntityReference } from "./EntityReference";
-import { Equipment } from "./Equipment";
-import { GameEntity, PlayerOrNpc } from "./GameEntity";
+import { ISerializedEffectableEntity } from './EffectableEntity';
+import { Broadcast } from './Broadcast';
+import { Damage } from './Damage';
+import { Heal } from './Heal';
+import { IItemDef, Item } from './Item';
+import { IInventoryDef, Inventory, InventoryFullError } from './Inventory';
+import { Room } from './Room';
+import { Config } from './Config';
+import { Party } from './Party';
+import { EquipSlotTakenError, EquipAlreadyEquippedError } from './EquipErrors';
+import { EntityReference } from './EntityReference';
+import { Equipment } from './Equipment';
+import { GameEntity, PlayerOrNpc } from './GameEntity';
+import { CharacterEvents } from './Events';
 
 export interface ICharacterConfig extends ISerializedEffectableEntity {
 	/** @property {string}     name       Name shown on look/who/login */
@@ -46,7 +47,9 @@ export interface ISerializedCharacter extends ISerializedEffectableEntity {
  * @extends EffectableEntity
  * **Mixes**: Metadatable
  */
-export class Character extends GameEntity {
+export class Character<
+	Events extends CharacterEvents = CharacterEvents,
+> extends GameEntity<Events> {
 	/** @property {string}     name       Name shown on look/who/login */
 	name: string;
 	/** @property {Inventory}  inventory */
@@ -108,7 +111,7 @@ export class Character extends GameEntity {
 			 * Fired when Character#initiateCombat is called
 			 * @event Character#combatStart
 			 */
-			this.emit("combatStart");
+			this.emit('combatStart');
 		}
 
 		if (this.isInCombat(target)) {
@@ -151,7 +154,7 @@ export class Character extends GameEntity {
 		 * @event Character#combatantAdded
 		 * @param {Character} target
 		 */
-		this.emit("combatantAdded", target);
+		this.emit('combatantAdded', target);
 	}
 
 	/**
@@ -171,13 +174,13 @@ export class Character extends GameEntity {
 		 * @event Character#combatantRemoved
 		 * @param {Character} target
 		 */
-		this.emit("combatantRemoved", target);
+		this.emit('combatantRemoved', target);
 
 		if (!this.combatants.size) {
 			/**
 			 * @event Character#combatEnd
 			 */
-			this.emit("combatEnd");
+			this.emit('combatEnd');
 		}
 	}
 
@@ -227,13 +230,13 @@ export class Character extends GameEntity {
 		 * @event Item#equip
 		 * @param {Character} equipper
 		 */
-		item.emit("equip", this);
+		item.emit('equip', this);
 		/**
 		 * @event Character#equip
 		 * @param {string} slot
 		 * @param {Item} item
 		 */
-		this.emit("equip", slot, item);
+		this.emit('equip', slot, item);
 	}
 
 	/**
@@ -265,13 +268,13 @@ export class Character extends GameEntity {
 		 * @event Item#unequip
 		 * @param {Character} equipper
 		 */
-		item.emit("unequip", this);
+		item.emit('unequip', this);
 		/**
 		 * @event Character#unequip
 		 * @param {string} slot
 		 * @param {Item} item
 		 */
-		this.emit("unequip", slot, item);
+		this.emit('unequip', slot, item);
 		this.addItem(item);
 	}
 
@@ -330,7 +333,7 @@ export class Character extends GameEntity {
 		this.inventory = this.inventory || new Inventory();
 		// Default max inventory size config
 		if (!this.isNpc && !isFinite(this.inventory.getMax())) {
-			this.inventory.setMax(Config.get("defaultMaxPlayerInventory", 20));
+			this.inventory.setMax(Config.get('defaultMaxPlayerInventory', 20));
 		}
 	}
 
@@ -350,7 +353,7 @@ export class Character extends GameEntity {
 		 * @event Character#followed
 		 * @param {Character} target
 		 */
-		this.emit("followed", target);
+		this.emit('followed', target);
 	}
 
 	/**
@@ -367,7 +370,7 @@ export class Character extends GameEntity {
 		 * @event Character#unfollowed
 		 * @param {Character} following
 		 */
-		this.emit("unfollowed", this.following);
+		this.emit('unfollowed', this.following);
 		this.following = null;
 	}
 
@@ -382,7 +385,7 @@ export class Character extends GameEntity {
 		 * @event Character#gainedFollower
 		 * @param {Character} follower
 		 */
-		this.emit("gainedFollower", follower);
+		this.emit('gainedFollower', follower);
 	}
 
 	/**
@@ -396,7 +399,7 @@ export class Character extends GameEntity {
 		 * @event Character#lostFollower
 		 * @param {Character} follower
 		 */
-		this.emit("lostFollower", follower);
+		this.emit('lostFollower', follower);
 	}
 
 	/**
@@ -426,23 +429,23 @@ export class Character extends GameEntity {
 	 * @param {number} amount
 	 * @param {string} [attribute="health"]
 	 * @param {Character} [attacker]
-	 * @param {*} [source]
+	 * @param {unknown} [source]
 	 * @param {Record<string, unknown>} [metadata]
 	 * @see {@link Damage}
 	 */
 	damage(
 		amount: number,
-		attribute: string = "health",
+		attribute: string = 'health',
 		attacker?: Character,
-		source?: any,
-		metadata?: Record<string, unknown>,
+		source?: unknown,
+		metadata?: Record<string, unknown>
 	) {
 		const damage = new Damage(
 			attribute,
 			amount,
 			attacker as PlayerOrNpc,
 			source,
-			metadata,
+			metadata
 		);
 		damage.commit(this as unknown as PlayerOrNpc);
 	}
@@ -451,23 +454,23 @@ export class Character extends GameEntity {
 	 * @param {number} amount
 	 * @param {string} [attribute="health"]
 	 * @param {Character} [attacker]
-	 * @param {*} [source]
+	 * @param {unknown} [source]
 	 * @param {Record<string, unknown>} [metadata]
 	 * @see {@link Heal}
 	 */
 	heal(
 		amount: number,
-		attribute: string = "health",
+		attribute: string = 'health',
 		attacker?: Character,
-		source?: any,
-		metadata?: Record<string, unknown>,
+		source?: unknown,
+		metadata?: Record<string, unknown>
 	) {
 		const heal = new Heal(
 			attribute,
 			amount,
 			attacker as PlayerOrNpc,
 			source,
-			metadata,
+			metadata
 		);
 		heal.commit(this as unknown as PlayerOrNpc);
 	}
@@ -481,7 +484,7 @@ export class Character extends GameEntity {
 		return Object.assign(super.serialize(), {
 			level: this.level,
 			name: this.name,
-			room: this.room?.entityReference || "void",
+			room: this.room?.entityReference || 'void',
 		});
 	}
 

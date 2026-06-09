@@ -123,7 +123,7 @@ export class CommandQueue {
 	 */
 	getMsTilRun(commandIndex: number) {
 		if (!this.commands[commandIndex]) {
-			throw new RangeError("Invalid command index");
+			throw new RangeError('Invalid command index');
 		}
 
 		let lagTotal = this.msTilNextRun;
@@ -134,6 +134,6 @@ export class CommandQueue {
 
 			lagTotal += this.commands[i].lag || 0;
 		}
-		throw new RangeError("Invalid command index");
+		throw new RangeError('Invalid command index');
 	}
 }

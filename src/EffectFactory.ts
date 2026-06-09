@@ -1,6 +1,6 @@
-import { Effect, IEffectConfig, IEffectDef, IEffectState } from "./Effect";
-import { EventManager } from "./EventManager";
-import { IGameState } from "./GameState";
+import { Effect, IEffectConfig, IEffectDef, IEffectState } from './Effect';
+import { EventManager } from './EventManager';
+import { IGameState } from './GameState';
 
 export interface IEffectFactoryDef {
 	definition: IEffectDef;
@@ -29,7 +29,7 @@ export class EffectFactory {
 		const definition = Object.assign({}, config);
 		delete definition.listeners;
 		let listeners = config.listeners || {};
-		if (typeof listeners === "function") {
+		if (typeof listeners === 'function') {
 			listeners = listeners(state);
 		}
 

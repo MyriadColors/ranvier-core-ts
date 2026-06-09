@@ -1,4 +1,4 @@
-import { Helpfile } from "./Helpfile";
+import { Helpfile } from './Helpfile';
 
 /**
  * Contain/look up helpfiles

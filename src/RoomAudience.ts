@@ -1,5 +1,5 @@
-import { Broadcastable } from "./Broadcast";
-import { ChannelAudience } from "./ChannelAudience";
+import { Broadcastable } from './Broadcast';
+import { ChannelAudience } from './ChannelAudience';
 
 /**
  * Audience class representing other players in the same room as the sender

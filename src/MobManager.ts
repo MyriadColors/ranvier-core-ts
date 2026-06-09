@@ -1,5 +1,5 @@
-import { Item } from "./Item";
-import { Npc } from "./Npc";
+import { Item } from './Item';
+import { Npc } from './Npc';
 
 /**
  * Keeps track of all the individual mobs in the game
@@ -15,6 +15,14 @@ export class MobManager {
 	 */
 	addMob(mob: Npc) {
 		this.mobs.set(mob.uuid, mob);
+	}
+
+	/**
+	 * @param {string} ref
+	 * @return {Npc | undefined}
+	 */
+	getMob(ref: string): Npc | undefined {
+		return this.mobs.get(ref);
 	}
 
 	/**
@@ -37,7 +45,7 @@ export class MobManager {
 
 		if (mob.equipment && mob.equipment.size) {
 			(mob.equipment as Map<string, Item>).forEach((item, slot) =>
-				mob.unequip(slot),
+				mob.unequip(slot)
 			);
 		}
 

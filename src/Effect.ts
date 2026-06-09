@@ -1,14 +1,24 @@
-import { EventEmitter } from "events";
-import { Damage } from "./Damage";
-import { EffectableEntity } from "./EffectableEntity";
-import { IGameState } from "./GameState";
-import { Skill } from "./Skill";
-import { EventListeners } from "./EventManager";
-import { AnyCharacter, PlayerOrNpc } from "./GameEntity";
+import { EventEmitter } from 'events';
+import { Damage } from './Damage';
+import { EffectableEntity } from './EffectableEntity';
+import { IGameState } from './GameState';
+import { Skill } from './Skill';
+import { EventListeners } from './EventManager';
+import { AnyCharacter, PlayerOrNpc } from './GameEntity';
 
 export type AttributesModifier =
-	| Record<string, (this: Effect, current: number, ...args: any[]) => any>
-	| ((this: Effect, attrName: string, current: number) => any);
+	| Record<
+			string,
+			(this: Effect, current: number, ...args: unknown[]) => number
+	  >
+	| ((this: Effect, attrName: string, current: number) => number);
+
+export type PropertyModifier =
+	| Record<
+			string,
+			(this: Effect, current: unknown, ...args: unknown[]) => unknown
+	  >
+	| ((this: Effect, propertyName: string, current: unknown) => unknown);
 
 /** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
 export type EffectModifiers = {
@@ -16,14 +26,14 @@ export type EffectModifiers = {
 	incomingDamage: (
 		damage: Damage,
 		currentAmount: number,
-		attacker?: PlayerOrNpc,
-	) => any;
+		attacker?: PlayerOrNpc
+	) => number;
 	outgoingDamage: (
 		damage: Damage,
 		currentAmount: number,
-		target: PlayerOrNpc,
-	) => any;
-	properties: AttributesModifier;
+		target: PlayerOrNpc
+	) => number;
+	properties: PropertyModifier;
 };
 
 export interface IEffectDef {
@@ -138,20 +148,20 @@ export class Effect extends EventEmitter {
 		this.config = Object.assign(
 			{
 				autoActivate: true,
-				description: "",
+				description: '',
 				duration: Infinity,
 				hidden: false,
 				maxStacks: 0,
-				name: "Unnamed Effect",
+				name: 'Unnamed Effect',
 				persists: true,
 				refreshes: false,
 				tickInterval: false,
-				type: "undef",
+				type: 'undef',
 				unique: true,
 				elapsed: 0,
 				paused: 0,
 			},
-			def.config,
+			def.config
 		);
 
 		this.startedAt = 0;
@@ -163,7 +173,7 @@ export class Effect extends EventEmitter {
 				outgoingDamage: (_damage: Damage, current: number) => current,
 				properties: {},
 			} as EffectModifiers,
-			def.modifiers,
+			def.modifiers
 		);
 
 		// internal state saved across player load e.g., stacks, amount of damage shield remaining, whatever
@@ -176,7 +186,7 @@ export class Effect extends EventEmitter {
 				lastTick: -Infinity,
 				cooldownId: null,
 			},
-			def.state,
+			def.state
 		);
 
 		if (this.config.maxStacks) {
@@ -190,7 +200,7 @@ export class Effect extends EventEmitter {
 		}
 
 		if (this.config.autoActivate) {
-			this.on("effectAdded", this.activate);
+			this.on('effectAdded', this.activate);
 		}
 	}
 
@@ -253,7 +263,7 @@ export class Effect extends EventEmitter {
 	 */
 	activate() {
 		if (!this.target) {
-			throw new Error("Cannot activate an effect without a target");
+			throw new Error('Cannot activate an effect without a target');
 		}
 
 		if (this.active) {
@@ -266,7 +276,7 @@ export class Effect extends EventEmitter {
 		/**
 		 * @event Effect#effectActivated
 		 */
-		this.emit("effectActivated");
+		this.emit('effectActivated');
 	}
 
 	/**
@@ -283,7 +293,7 @@ export class Effect extends EventEmitter {
 		/**
 		 * @event Effect#effectDeactivated
 		 */
-		this.emit("effectDeactivated");
+		this.emit('effectDeactivated');
 	}
 
 	/**
@@ -294,7 +304,7 @@ export class Effect extends EventEmitter {
 		/**
 		 * @event Effect#remove
 		 */
-		this.emit("remove");
+		this.emit('remove');
 	}
 
 	/**
@@ -319,10 +329,11 @@ export class Effect extends EventEmitter {
 	 * @param {number} currentValue
 	 * @return {number} attribute value modified by effect
 	 */
-	modifyAttribute(attrName: string, currentValue: number) {
-		let modifier = (_?: any) => _;
+	modifyAttribute(attrName: string, currentValue: number): number {
+		let modifier: (this: Effect, current: number) => number = (current) =>
+			current;
 		const attributeModifiers = this.modifiers.attributes;
-		if (typeof attributeModifiers === "function") {
+		if (typeof attributeModifiers === 'function') {
 			modifier = (current) => {
 				return attributeModifiers.bind(this)(attrName, current);
 			};
@@ -339,10 +350,11 @@ export class Effect extends EventEmitter {
 	 * @param {number} currentValue
 	 * @return {*} property value modified by effect
 	 */
-	modifyProperty(propertyName: string, currentValue: number) {
-		let modifier = (_: any) => _;
+	modifyProperty(propertyName: string, currentValue: unknown): unknown {
+		let modifier: (this: Effect, current: unknown) => unknown = (current) =>
+			current;
 		const propertyModifiers = this.modifiers.properties;
-		if (typeof propertyModifiers === "function") {
+		if (typeof propertyModifiers === 'function') {
 			modifier = (current) => {
 				return propertyModifiers.bind(this)(propertyName, current);
 			};
@@ -361,7 +373,7 @@ export class Effect extends EventEmitter {
 	modifyIncomingDamage(
 		damage: Damage,
 		currentAmount: number,
-		attacker?: PlayerOrNpc,
+		attacker?: PlayerOrNpc
 	) {
 		const modifier = this.modifiers.incomingDamage.bind(this);
 		return modifier(damage, currentAmount, attacker);
@@ -376,7 +388,7 @@ export class Effect extends EventEmitter {
 	modifyOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: AnyCharacter,
+		target: AnyCharacter
 	) {
 		const modifier = this.modifiers.outgoingDamage.bind(this);
 		return modifier(damage, currentAmount, target as PlayerOrNpc);

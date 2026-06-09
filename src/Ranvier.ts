@@ -1,9 +1,9 @@
-import { IGameState } from "./GameState";
-import { Player } from "./Player";
-import { Room } from "./Room";
-import { Area } from "./Area";
-import { Npc } from "./Npc";
-import { Item } from "./Item";
+import { IGameState } from './GameState';
+import { Player } from './Player';
+import { Room } from './Room';
+import { Area } from './Area';
+import { Npc } from './Npc';
+import { Item } from './Item';
 
 /**
  * Service locator and facade for common Ranvier MUD operations.

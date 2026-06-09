@@ -1,6 +1,6 @@
-import { StreamType } from "./TransportStream";
+import { StreamType } from './TransportStream';
 
-import sty from "sty";
+import sty from 'sty';
 
 export type EventUtilReturn = (message: string) => void;
 
@@ -26,7 +26,7 @@ export class EventUtil {
 	 */
 	static genSay(socket: StreamType | null): EventUtilReturn {
 		return socket
-			? (message: string) => socket.write(sty.parse(message + "\r\n"))
+			? (message: string) => socket.write(sty.parse(message + '\r\n'))
 			: () => {};
 	}
 }

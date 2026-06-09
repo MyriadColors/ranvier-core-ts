@@ -1,5 +1,5 @@
-import { Attribute, AttributeName, ISerializedAttribute } from "./Attribute";
-import type { Character } from "./Character";
+import { Attribute, AttributeName, ISerializedAttribute } from './Attribute';
+import type { Character } from './Character';
 
 /**
  * Container for a list of attributes for a {@link Character}

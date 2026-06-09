@@ -1,7 +1,7 @@
-import { Character } from "./Character";
-import { Damage } from "./Damage";
-import { PlayerOrNpc } from "./GameEntity";
-import { Room } from "./Room";
+import { Character } from './Character';
+import { Damage } from './Damage';
+import { PlayerOrNpc } from './GameEntity';
+import { Room } from './Room';
 
 /**
  * Damage class used for applying damage to multiple entities in a room. By
@@ -18,7 +18,7 @@ export class AreaOfEffectDamage extends Damage {
 		if (!(room instanceof Room)) {
 			if (!(room instanceof Character)) {
 				throw new RangeError(
-					"AreaOfEffectDamage commit target must be an instance of Room or Character",
+					'AreaOfEffectDamage commit target must be an instance of Room or Character'
 				);
 			}
 
@@ -36,7 +36,7 @@ export class AreaOfEffectDamage extends Damage {
 		 * @param {Damage} damage
 		 * @param {Array<Character>} targets
 		 */
-		room.emit("areaDamage", this, targets);
+		room.emit('areaDamage', this, targets);
 	}
 
 	/**

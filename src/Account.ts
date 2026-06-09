@@ -1,8 +1,8 @@
-import { EventEmitter } from "events";
-import { AccountManager } from "./AccountManager";
-import { Metadata, Metadatable } from "./Metadatable";
+import { EventEmitter } from 'events';
+import { AccountManager } from './AccountManager';
+import { Metadata, Metadatable } from './Metadatable';
 
-import bcrypt from "bcryptjs";
+import bcrypt from 'bcryptjs';
 
 export interface IAccountConfig {
 	/** @property {string} username */

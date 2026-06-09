@@ -1,6 +1,6 @@
-import { EventEmitter } from "events";
-import { IGameState } from "./GameState";
-import { Command } from "commander";
+import { EventEmitter } from 'events';
+import { IGameState } from './GameState';
+import { Command } from 'commander';
 
 export class GameServer extends EventEmitter {
 	/**
@@ -12,7 +12,7 @@ export class GameServer extends EventEmitter {
 		 * @event GameServer#startup
 		 * @param {commander} commander
 		 */
-		this.emit("startup", commander);
+		this.emit('startup', commander);
 	}
 
 	/**
@@ -22,7 +22,7 @@ export class GameServer extends EventEmitter {
 		/**
 		 * @event GameServer#shutdown
 		 */
-		this.emit("shutdown");
+		this.emit('shutdown');
 	}
 }
 

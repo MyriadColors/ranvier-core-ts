@@ -1,5 +1,5 @@
-import { EffectableEntity } from "./EffectableEntity";
-import { Metadata } from "./Metadatable";
+import { EffectableEntity } from './EffectableEntity';
+import { Metadata } from './Metadatable';
 
 export type AttributeName = string;
 
@@ -51,7 +51,7 @@ export class Attribute {
 		base: number,
 		delta: number = 0,
 		formula: AttributeFormula | null = null,
-		metadata: Metadata = {},
+		metadata: Metadata = {}
 	) {
 		if (isNaN(base)) {
 			throw new TypeError(`Base attribute must be a number, got ${base}.`);
@@ -61,7 +61,7 @@ export class Attribute {
 		}
 		if (formula && !(formula instanceof AttributeFormula)) {
 			throw new TypeError(
-				"Attribute formula must be instance of AttributeFormula",
+				'Attribute formula must be instance of AttributeFormula'
 			);
 		}
 
@@ -134,11 +134,11 @@ export class AttributeFormula {
 
 	constructor(requires: AttributeName[], fn: AttributeFormulaExecutable) {
 		if (!Array.isArray(requires)) {
-			throw new TypeError("requires not an array");
+			throw new TypeError('requires not an array');
 		}
 
-		if (typeof fn !== "function") {
-			throw new TypeError("Formula function is not a function");
+		if (typeof fn !== 'function') {
+			throw new TypeError('Formula function is not a function');
 		}
 
 		this.requires = requires;
@@ -150,7 +150,7 @@ export class AttributeFormula {
 		character: EffectableEntity,
 		...args: number[]
 	) {
-		if (typeof this.formula !== "function") {
+		if (typeof this.formula !== 'function') {
 			throw new Error(`Formula is not callable ${this.formula}`);
 		}
 

@@ -1,6 +1,6 @@
-import { Attribute, AttributeFormula, IAttributeDef } from "./Attribute";
+import { Attribute, AttributeFormula, IAttributeDef } from './Attribute';
 
-type OmitFormula = Omit<IAttributeDef, "formula">;
+type OmitFormula = Omit<IAttributeDef, 'formula'>;
 export interface AttributeFactoryAttribute extends OmitFormula {
 	formula: AttributeFormula | null;
 }
@@ -24,10 +24,10 @@ export class AttributeFactory {
 		name: string,
 		base: number,
 		formula: AttributeFormula | null = null,
-		metadata = {},
+		metadata = {}
 	) {
 		if (formula && !(formula instanceof AttributeFormula)) {
-			throw new TypeError("Formula not instance of AttributeFormula");
+			throw new TypeError('Formula not instance of AttributeFormula');
 		}
 
 		this.attributes.set(name, {
@@ -72,7 +72,7 @@ export class AttributeFactory {
 			base || def.base,
 			delta,
 			def.formula,
-			def.metadata || {},
+			def.metadata || {}
 		);
 	}
 
@@ -95,9 +95,9 @@ export class AttributeFactory {
 		for (const attrName in references) {
 			const check = this.checkReferences(attrName, references);
 			if (Array.isArray(check)) {
-				const path = check.concat(attrName).join(" -> ");
+				const path = check.concat(attrName).join(' -> ');
 				throw new Error(
-					`Attribute formula for [${attrName}] has circular dependency [${path}]`,
+					`Attribute formula for [${attrName}] has circular dependency [${path}]`
 				);
 			}
 		}
@@ -113,7 +113,7 @@ export class AttributeFactory {
 	private checkReferences(
 		attr: string,
 		references: Record<string, string[]>,
-		stack: string[] = [],
+		stack: string[] = []
 	): boolean | string[] {
 		if (stack.includes(attr)) {
 			return stack;
@@ -129,7 +129,7 @@ export class AttributeFactory {
 			const check = this.checkReferences(
 				reqAttr,
 				references,
-				stack.concat(attr),
+				stack.concat(attr)
 			);
 			if (Array.isArray(check)) {
 				return check;

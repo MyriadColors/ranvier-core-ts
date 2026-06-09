@@ -1,5 +1,5 @@
-import { Skill } from "./Skill";
-import { SkillFlag } from "./SkillFlag";
+import { Skill } from './Skill';
+import { SkillFlag } from './SkillFlag';
 
 /**
  * Keeps track of registered skills

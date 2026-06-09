@@ -1,10 +1,10 @@
-import { EffectableEntity } from ".";
-import { Area } from "./Area";
-import { BehaviorManager } from "./BehaviorManager";
-import { EntityReference } from "./EntityReference";
-import { Item } from "./Item";
-import { Npc } from "./Npc";
-import { Room } from "./Room";
+import { EffectableEntity } from '.';
+import { Area } from './Area';
+import { BehaviorManager } from './BehaviorManager';
+import { EntityReference } from './EntityReference';
+import { Item } from './Item';
+import { Npc } from './Npc';
+import { Room } from './Room';
 
 export type EntityDefinitionBase = {
 	entityReference: string;
@@ -39,7 +39,7 @@ export abstract class EntityFactory<
 	 * @return {string}
 	 */
 	createEntityRef(area: string, id: string | number): string {
-		return area + ":" + id;
+		return area + ':' + id;
 	}
 
 	/**
@@ -69,7 +69,7 @@ export abstract class EntityFactory<
 	addScriptListener(
 		entityRef: EntityReference,
 		event: string,
-		listener: (...args: any[]) => void,
+		listener: (...args: any[]) => void
 	): void {
 		this.scripts.addListener(entityRef, event, listener);
 	}
@@ -87,12 +87,12 @@ export abstract class EntityFactory<
 	createByType(
 		area: Area,
 		entityRef: EntityReference,
-		Constructor: EntityConstructor<TEntity, TDef>,
+		Constructor: EntityConstructor<TEntity, TDef>
 	): TEntity {
 		const definition = this.getDefinition(entityRef);
 		if (!definition) {
 			throw new Error(
-				`[${Constructor.name}Factory] No Entity definition found for ${entityRef}`,
+				`[${Constructor.name}Factory] No Entity definition found for ${entityRef}`
 			);
 		}
 
@@ -120,7 +120,7 @@ export abstract class EntityFactory<
 		) {
 			return (this as any).create(
 				(entity as any).area,
-				(entity as any).entityReference,
+				(entity as any).entityReference
 			);
 		}
 	}

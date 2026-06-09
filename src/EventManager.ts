@@ -1,6 +1,6 @@
-import { EventEmitter } from "events";
-import { IGameState } from "./GameState";
-import { isIterable } from "./Util";
+import { EventEmitter } from 'events';
+import { IGameState } from './GameState';
+import { isIterable } from './Util';
 
 export type EventListenersRecord<T> = Record<
 	string,
@@ -17,7 +17,7 @@ export type EventListeners<T = unknown> =
  * for that event
  */
 export class EventManager {
-	events: Map<string, Set<(...args: any[]) => any>>;
+	events: Map<string, Set<(...args: unknown[]) => unknown>>;
 
 	constructor() {
 		this.events = new Map();
@@ -36,7 +36,7 @@ export class EventManager {
 	 * @param {string}   eventName
 	 * @param {Function} listener
 	 */
-	add(eventName: string, listener: (...args: any[]) => any) {
+	add(eventName: string, listener: (...args: unknown[]) => unknown) {
 		if (!this.events.has(eventName)) {
 			this.events.set(eventName, new Set());
 		}
@@ -72,12 +72,12 @@ export class EventManager {
 	 * @param {?string|iterable} events Optional name or list of event names to remove listeners from
 	 */
 	detach(emitter: EventEmitter, events: string | Iterable<string>) {
-		if (typeof events === "string") {
+		if (typeof events === 'string') {
 			events = [events];
 		} else if (!events) {
 			events = this.events.keys();
 		} else if (!isIterable(events)) {
-			throw new TypeError("events list passed to detach() is not iterable");
+			throw new TypeError('events list passed to detach() is not iterable');
 		}
 
 		for (const event of events) {

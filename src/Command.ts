@@ -1,13 +1,13 @@
-import { CommandType } from "./CommandType";
-import { Npc } from "./Npc";
-import { Player } from "./Player";
-import { PlayerRoles } from "./PlayerRoles";
+import { CommandType } from './CommandType';
+import { Npc } from './Npc';
+import { Player } from './Player';
+import { PlayerRoles } from './PlayerRoles';
 
 export type CommandFunction = (
 	args: string,
 	player: Npc | Player,
-	arg0: string,
-) => any;
+	arg0: string
+) => unknown;
 
 export interface ICommandDef {
 	name: string;
@@ -16,8 +16,8 @@ export interface ICommandDef {
 	aliases?: string[];
 	usage?: string;
 	requiredRole?: PlayerRoles;
-	metadata?: Record<string, any>;
-	command: any;
+	metadata?: Record<string, unknown>;
+	command: CommandFunction;
 }
 
 /**
@@ -40,7 +40,7 @@ export class Command {
 	usage: string;
 	requiredRole: PlayerRoles;
 	file: string;
-	metadata: Record<string, any>;
+	metadata: Record<string, unknown>;
 
 	/**
 	 * @param {string} bundle Bundle the command came from

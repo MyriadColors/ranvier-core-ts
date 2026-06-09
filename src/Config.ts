@@ -1,4 +1,4 @@
-let __cache: any = null;
+let __cache: Record<string, unknown> | null = null;
 
 /**
  * Access class for the `ranvier.json` config
@@ -8,14 +8,17 @@ export class Config {
 	 * @param {string} key
 	 * @param {*} fallback fallback value
 	 */
-	static get(key: string, fallback?: number | string | object) {
-		return key in __cache ? __cache[key] : fallback;
+	static get<T = unknown>(key: string, fallback?: T): T {
+		if (!__cache) {
+			return fallback as T;
+		}
+		return (key in __cache ? __cache[key] : fallback) as T;
 	}
 
 	/**
 	 * Load `ranvier.json` from disk
 	 */
-	static load(data: object) {
+	static load(data: Record<string, unknown>) {
 		__cache = data;
 	}
 }
