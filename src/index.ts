@@ -74,6 +74,7 @@ import { QuestReward } from './QuestReward';
 import { QuestRewardManager } from './QuestRewardManager';
 import { QuestTracker } from './QuestTracker';
 import { Ranvier } from './Ranvier';
+import { EngineResult, ActionResult, EngineResultFactory } from './Result';
 import { RoleAudience } from './RoleAudience';
 import { Room } from './Room';
 import { RoomAudience } from './RoomAudience';
@@ -174,6 +175,9 @@ export {
 	QuestRewardManager,
 	QuestTracker,
 	Ranvier,
+	EngineResult,
+	ActionResult,
+	EngineResultFactory,
 	RoleAudience,
 	Room,
 	RoomAudience,
