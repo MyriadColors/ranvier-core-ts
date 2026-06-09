@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { isIterable } from '../../src/Util';
+import { EventEmitter } from 'events';
+import { isIterable, Constructor } from '../../src/Util';
 
 describe('Util', () => {
 	describe('isIterable', () => {
@@ -36,6 +37,26 @@ describe('Util', () => {
 		it('returns false for booleans', () => {
 			expect(isIterable(true)).toBe(false);
 			expect(isIterable(false)).toBe(false);
+		});
+	});
+
+	describe('Constructor', () => {
+		it('should allow instantiating with unknown arguments', () => {
+			class Base extends EventEmitter {}
+			type BaseConstructor = Constructor<Base>;
+			class Derived extends Base {
+				public name: string;
+				public age: number;
+				constructor(name: string, age: number) {
+					super();
+					this.name = name;
+					this.age = age;
+				}
+			}
+			const Ctor: BaseConstructor = Derived as any; // Cast as any for now because any[] matches unknown[]
+			const instance = new Ctor('Test', 42);
+			expect(instance).toBeInstanceOf(Derived);
+			expect((instance as Derived).name).toBe('Test');
 		});
 	});
 });

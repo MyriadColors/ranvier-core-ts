@@ -1,15 +1,15 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import yaml from 'js-yaml';
 
-let dataPath: string | null = null;
-
 /**
- * Class for loading/parsing data files from disk
+ * Utility for loading/parsing data files from disk
  */
 export class Data {
+	private static _dataPath: string | null = null;
+
 	static setDataPath(path: string) {
-		dataPath = path;
+		this._dataPath = path;
 	}
 
 	/**
@@ -25,13 +25,13 @@ export class Data {
 		const contents = fs
 			.readFileSync(fs.realpathSync(filepath))
 			.toString('utf8');
-		const parsers = {
-			'.yml': yaml.load,
-			'.yaml': yaml.load,
+		const parsers: Record<string, (contents: string) => unknown> = {
+			'.yml': (content: string) => yaml.load(content),
+			'.yaml': (content: string) => yaml.load(content),
 			'.json': JSON.parse,
 		};
 
-		const ext = path.extname(filepath) as keyof typeof parsers;
+		const ext = path.extname(filepath);
 		if (!(ext in parsers)) {
 			throw new Error(`File [${filepath}] does not have a valid parser!`);
 		}
@@ -42,33 +42,29 @@ export class Data {
 	/**
 	 * Write data to a file
 	 * @param {string} filepath
-	 * @param {*} data
-	 * @param {function} callback
+	 * @param {unknown} data
+	 * @param {function} [callback]
 	 */
-	static saveFile(
-		filepath: string,
-		data: unknown,
-		callback?: () => void | undefined
-	) {
+	static saveFile(filepath: string, data: unknown, callback?: () => void) {
 		if (!fs.existsSync(filepath)) {
 			throw new Error(`File [${filepath}] does not exist!`);
 		}
 
-		const serializers = {
-			'.yml': yaml.dump,
-			'.yaml': yaml.dump,
-			'.json': function (data: unknown) {
+		const serializers: Record<string, (data: unknown) => string> = {
+			'.yml': (data: unknown) => yaml.dump(data),
+			'.yaml': (data: unknown) => yaml.dump(data),
+			'.json': (data: unknown) => {
 				//Make it prettttty
 				return JSON.stringify(data, null, 2);
 			},
 		};
 
-		const ext = path.extname(filepath) as keyof typeof serializers;
+		const ext = path.extname(filepath);
 		if (!(ext in serializers)) {
 			throw new Error(`File [${filepath}] does not have a valid serializer!`);
 		}
 
-		const dataToWrite = serializers[ext](data as any);
+		const dataToWrite = serializers[ext](data);
 		fs.writeFileSync(filepath, dataToWrite, 'utf8');
 
 		if (callback) {
@@ -90,8 +86,8 @@ export class Data {
 	 * Save data file (player/account) data to disk
 	 * @param {string} type
 	 * @param {string} id
-	 * @param {*} data
-	 * @param {function} callback
+	 * @param {unknown} data
+	 * @param {function} [callback]
 	 */
 	static save(type: string, id: string, data: unknown, callback?: () => void) {
 		fs.writeFileSync(
@@ -123,10 +119,10 @@ export class Data {
 	static getDataFilePath(type: string, id: string) {
 		switch (type) {
 			case 'player': {
-				return dataPath + `player/${id}.json`;
+				return `${this._dataPath}player/${id}.json`;
 			}
 			case 'account': {
-				return dataPath + `account/${id}.json`;
+				return `${this._dataPath}account/${id}.json`;
 			}
 			default:
 				throw new Error(
@@ -150,7 +146,7 @@ export class Data {
 	 * @return string
 	 */
 	static loadMotd() {
-		const motd = fs.readFileSync(dataPath + 'motd').toString('utf8');
+		const motd = fs.readFileSync(`${this._dataPath}motd`).toString('utf8');
 		return motd;
 	}
 }

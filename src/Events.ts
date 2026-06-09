@@ -1,7 +1,6 @@
 import type { Character } from './Character';
 import type { Item } from './Item';
 import type { Room } from './Room';
-import type { Area } from './Area';
 import type { Effect } from './Effect';
 import type { Damage } from './Damage';
 import type { Heal } from './Heal';

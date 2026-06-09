@@ -1,9 +1,8 @@
 import { EventEmitter } from 'events';
 
 /**
- * Standard constructor type
+ * Standard constructor type for mixins
  */
-// TODO: [Ref] Define specific type for constructor arguments if possible, though any[] is standard for mixins
 export type Constructor<T = EventEmitter> = new (...args: any[]) => T;
 
 /**

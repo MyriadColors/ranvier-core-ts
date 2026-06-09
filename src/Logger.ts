@@ -75,7 +75,7 @@ export class Logger {
 				}
 				try {
 					return JSON.stringify(m);
-				} catch (e) {
+				} catch {
 					return String(m);
 				}
 			})
